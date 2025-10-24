@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* 🎨 Updated Theme — Rich Blue 900 Dark Mode */
+@theme {
+  --color-background: #020817;   /* Rich Blue 900 — main background */
+  --color-surface: #0B1228;      /* Slightly lighter surface tone */
+  --color-card: #101935;         /* Card surface */
+  --color-primary: #3B82F6;      /* Light blue accent */
+  --color-accent: #2563EB;       /* Deep blue gradient end */
+  --color-border: #1E293B;       /* Subtle border */
+  --color-text: #E5E7EB;         /* Main text */
+  --color-text-muted: #94A3B8;   /* Muted text */
+}
+
+/* 🌌 Base Layer */
+@layer base {
+  html,
+  body {
+    @apply bg-[var(--color-background)] text-[var(--color-text)] min-h-screen antialiased transition-colors duration-300;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-[var(--color-text)];
+  }
+
+  p {
+    @apply text-[var(--color-text-muted)] leading-relaxed;
+  }
+}
+
+/* 🧱 Components */
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)]
+           hover:from-blue-600 hover:to-blue-700
+           text-white font-medium py-2 px-4 rounded-lg
+           transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+
+  .card {
+    @apply bg-[var(--color-card)] border border-[var(--color-border)]
+           rounded-xl shadow-lg transition-transform duration-300
+           hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)];
+  }
+
+  .input {
+    @apply bg-[var(--color-surface)] border border-[var(--color-border)]
+           text-[var(--color-text)] placeholder-[var(--color-text-muted)]
+           rounded-lg px-4 py-2 outline-none
+           focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]
+           transition-all duration-200;
+  }
+
+  .footer {
+    @apply bg-[var(--color-surface)] border-t border-[var(--color-border)]
+           text-[var(--color-text-muted)] py-6 text-center text-sm;
+  }
+}
+
+/* 🌈 Utilities */
+@layer utilities {
+  .bg-gradient-medilink {
+    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)];
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease-in-out;
+}
