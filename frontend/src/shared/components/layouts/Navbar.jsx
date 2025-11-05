@@ -1,26 +1,14 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
 import { logout } from "../../../modules/auth/store/authSlice";
-
-import {
-  Heart,
-  Menu,
-  LogIn,
-  LogOut,
-  User,
-  Package,
-  FileText,
-  MessageCircle,
-  Trophy,
-  X,
-} from "lucide-react";
+import { Heart, Menu, LogIn, LogOut, User, X, ChevronDown } from "lucide-react";
 
 const Navbar = () => {
   const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
-
-  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -29,208 +17,201 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const navLinks = [
+    { name: "Home", path: "/" },
+    { name: "Listings", path: "/listings" },
+    { name: "Requests", path: "/requests", protected: true },
+    { name: "Chat", path: "/chat", protected: true },
+    { name: "Leaderboard", path: "/leaderboard" },
+    { name: "Dashboard", path: "/dashboard", protected: true },
+  ];
+
   return (
-    <nav className="w-full bg-[#0A0F2C]/95 backdrop-blur-md border-b border-gray-800 fixed top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
-        {/* Logo */}
-        <div
-          onClick={() => navigate("/")}
-          className="flex items-center gap-2 cursor-pointer"
-        >
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-            <Heart className="w-5 h-5 text-white" />
+    <nav className="w-full bg-surface/95 backdrop-blur-md border-b border-border fixed top-0 z-50 shadow-lg">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="w-9 h-9 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center shadow-glow"
+            >
+              <Heart className="w-5 h-5 text-white" fill="currentColor" />
+            </motion.div>
+            <h1 className="text-xl font-bold text-primary">MediLink</h1>
+          </motion.div>
+
+          {/* Desktop Nav Links */}
+          <div className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => {
+              if (link.protected && !isAuthenticated) return null;
+              return (
+                <NavLink
+                  key={link.path}
+                  to={link.path}
+                  className={({ isActive }) =>
+                    `px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                      isActive
+                        ? "text-primary bg-primary/10"
+                        : "text-muted hover:text-text hover:bg-surface"
+                    }`
+                  }
+                >
+                  {link.name}
+                </NavLink>
+              );
+            })}
           </div>
-          <h1 className="text-xl font-semibold text-blue-400">MediLink</h1>
-        </div>
 
-        {/* Desktop Nav Links */}
-        {/* Desktop Nav Links */}
-        <div className="hidden md:flex items-center gap-6 text-gray-300">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `hover:text-blue-400 transition ${
-                isActive ? "text-blue-400 font-semibold" : ""
-              }`
-            }
-          >
-            Home
-          </NavLink>
-
-          <NavLink
-            to="/listings"
-            className={({ isActive }) =>
-              `hover:text-blue-400 transition ${
-                isActive ? "text-blue-400 font-semibold" : ""
-              }`
-            }
-          >
-            Listings
-          </NavLink>
-
-          <NavLink
-            to="/requests"
-            className={({ isActive }) =>
-              `hover:text-blue-400 transition ${
-                isActive ? "text-blue-400 font-semibold" : ""
-              }`
-            }
-          >
-            Requests
-          </NavLink>
-
-          <NavLink
-            to="/chat"
-            className={({ isActive }) =>
-              `hover:text-blue-400 transition ${
-                isActive ? "text-blue-400 font-semibold" : ""
-              }`
-            }
-          >
-            Chat
-          </NavLink>
-
-          <NavLink
-            to="/leaderboard"
-            className={({ isActive }) =>
-              `hover:text-blue-400 transition ${
-                isActive ? "text-blue-400 font-semibold" : ""
-              }`
-            }
-          >
-            Leaderboard
-          </NavLink>
-
-          {/* ✅ Dashboard only visible if logged in */}
-          {isAuthenticated && (
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                `hover:text-blue-400 transition ${
-                  isActive ? "text-blue-400 font-semibold" : ""
-                }`
-              }
-            >
-              Dashboard
-            </NavLink>
-          )}
-        </div>
-
-        {/* Right Side */}
-        <div className="hidden md:flex items-center gap-4">
-          {!isAuthenticated ? (
-            <button
-              onClick={() => navigate("/auth")}
-              className="flex items-center gap-2 border border-blue-500 text-blue-400 hover:bg-blue-600 hover:text-white px-4 py-1.5 rounded-lg transition"
-            >
-              <LogIn size={16} />
-              Login
-            </button>
-          ) : (
-            <>
-            <NavLink to={'/dashboard/profile'}>
-              <div className="flex items-center gap-2 text-gray-300">
-                <User size={18} className="text-blue-400" />
-                <span className="text-sm">
-                  {userInfo?.name || userInfo?.fullName || "User"}
-                </span>
-              </div>
-            </NavLink>
-              
-
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 text-red-400 hover:text-red-500 transition"
+          {/* Right Side - Desktop */}
+          <div className="hidden md:flex items-center gap-4">
+            {!isAuthenticated ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/auth")}
+                className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-white px-6 py-2 rounded-lg font-medium shadow-soft hover:shadow-glow transition-all duration-300"
               >
-                <LogOut size={16} />
-                Logout
-              </button>
-            </>
-          )}
-        </div>
+                <LogIn size={18} />
+                Login
+              </motion.button>
+            ) : (
+              <div className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface border border-border hover:border-primary transition-all duration-200"
+                >
+                  <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                    <User size={18} className="text-white" />
+                  </div>
+                  <span className="text-sm font-medium text-text">
+                    {userInfo?.name || "User"}
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform ${
+                      showProfileMenu ? "rotate-180" : ""
+                    }`}
+                  />
+                </motion.button>
 
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden text-gray-300 hover:text-blue-400 transition"
-        >
-          {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-lg shadow-2xl overflow-hidden"
+                    >
+                      <button
+                        onClick={() => {
+                          navigate("/dashboard/profile");
+                          setShowProfileMenu(false);
+                        }}
+                        className="w-full px-4 py-3 text-left text-text hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2"
+                      >
+                        <User size={16} />
+                        Profile
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2"
+                      >
+                        <LogOut size={16} />
+                        Logout
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden text-text hover:text-primary transition-colors"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-[#101935] border-t border-gray-800 px-6 py-4 space-y-3 text-gray-300">
-          <NavLink
-            to="/"
-            onClick={() => setIsMenuOpen(false)}
-            className="block hover:text-blue-400 transition"
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-surface border-t border-border"
           >
-            Home
-          </NavLink>
+            <div className="px-6 py-4 space-y-2">
+              {navLinks.map((link) => {
+                if (link.protected && !isAuthenticated) return null;
+                return (
+                  <NavLink
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `block px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                        isActive
+                          ? "text-primary bg-primary/10"
+                          : "text-muted hover:text-text hover:bg-background"
+                      }`
+                    }
+                  >
+                    {link.name}
+                  </NavLink>
+                );
+              })}
 
-          {isAuthenticated ? (
-            <>
-              <NavLink
-                to="/dashboard"
-                onClick={() => setIsMenuOpen(false)}
-                className="block hover:text-blue-400 transition"
-              >
-                Dashboard
-              </NavLink>
-              <NavLink
-                to="/listings"
-                onClick={() => setIsMenuOpen(false)}
-                className="block hover:text-blue-400 transition"
-              >
-                Listings
-              </NavLink>
-              <NavLink
-                to="/requests"
-                onClick={() => setIsMenuOpen(false)}
-                className="block hover:text-blue-400 transition"
-              >
-                Requests
-              </NavLink>
-              <NavLink
-                to="/chat"
-                onClick={() => setIsMenuOpen(false)}
-                className="block hover:text-blue-400 transition"
-              >
-                Chat
-              </NavLink>
-              <NavLink
-                to="/leaderboard"
-                onClick={() => setIsMenuOpen(false)}
-                className="block hover:text-blue-400 transition"
-              >
-                Leaderboard
-              </NavLink>
+              {isAuthenticated && (
+                <>
+                  <div className="border-t border-border my-2"></div>
+                  <button
+                    onClick={() => {
+                      navigate("/dashboard/profile");
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-3 rounded-lg text-text hover:bg-primary/10 hover:text-primary transition-all"
+                  >
+                    <User size={18} />
+                    Profile
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-4 py-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all"
+                  >
+                    <LogOut size={18} />
+                    Logout
+                  </button>
+                </>
+              )}
 
-              <div className="border-t border-gray-700 my-2"></div>
-
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-2 text-red-400 hover:text-red-500 transition"
-              >
-                <LogOut size={16} />
-                Logout
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => {
-                navigate("/auth");
-                setIsMenuOpen(false);
-              }}
-              className="w-full flex items-center gap-2 border border-blue-500 text-blue-400 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg transition"
-            >
-              <LogIn size={16} />
-              Login
-            </button>
-          )}
-        </div>
-      )}
+              {!isAuthenticated && (
+                <button
+                  onClick={() => {
+                    navigate("/auth");
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-accent text-white px-6 py-3 rounded-lg font-medium shadow-soft"
+                >
+                  <LogIn size={18} />
+                  Login
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

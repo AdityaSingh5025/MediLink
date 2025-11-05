@@ -1,3 +1,4 @@
+
 import { apiConnector } from "../../../core/axios/axios.config";
 
 export const requestApi = {
@@ -10,14 +11,18 @@ export const requestApi = {
         data
       );
 
+     
       return {
         success: true,
         data: response.data?.request || response.data,
       };
     } catch (error) {
+      console.error("Request creation error:", error.response || error);
+      
       return {
         success: false,
         error:
+          error.response?.data?.message || 
           error.response?.data?.error ||
           error.message ||
           "Failed to create request",
@@ -25,7 +30,7 @@ export const requestApi = {
     }
   },
 
-  // Get all requests for a specific listing it is for admin only
+  // Get all requests for a specific listing
   getRequestForListing: async (listingId) => {
     try {
       const response = await apiConnector(
@@ -41,6 +46,7 @@ export const requestApi = {
       return {
         success: false,
         error:
+          error.response?.data?.message ||
           error.response?.data?.error ||
           error.message ||
           "Failed to get requests for listing",
@@ -56,6 +62,7 @@ export const requestApi = {
         : `/request/getrequest-my`;
       const response = await apiConnector("GET", url);
 
+
       return {
         success: true,
         data: response.data?.requests || response.data,
@@ -64,6 +71,7 @@ export const requestApi = {
       return {
         success: false,
         error:
+          error.response?.data?.message ||
           error.response?.data?.error ||
           error.message ||
           "Failed to get my requests",
@@ -83,6 +91,7 @@ export const requestApi = {
       return {
         success: false,
         error:
+          error.response?.data?.message ||
           error.response?.data?.error ||
           error.message ||
           "Failed to approve request",
@@ -102,6 +111,7 @@ export const requestApi = {
       return {
         success: false,
         error:
+          error.response?.data?.message ||
           error.response?.data?.error ||
           error.message ||
           "Failed to cancel request",
@@ -121,6 +131,7 @@ export const requestApi = {
       return {
         success: false,
         error:
+          error.response?.data?.message ||
           error.response?.data?.error ||
           error.message ||
           "Failed to reject request",
@@ -143,6 +154,7 @@ export const requestApi = {
       return {
         success: false,
         error:
+          error.response?.data?.message ||
           error.response?.data?.error ||
           error.message ||
           "Failed to complete request",
@@ -150,19 +162,23 @@ export const requestApi = {
     }
   },
 
-  // donated 
+  // Mark as donated
   markAsDonated: async (requestId) => {
-  try {
-    const response = await apiConnector("PUT", `/request/${requestId}/mark-donated`);
-    return {
-      success: true,
-      data: response.data?.request || response.data,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error.response?.data?.error || error.message || "Failed to mark as donated",
-    };
-  }
-},
+    try {
+      const response = await apiConnector("PUT", `/request/${requestId}/mark-donated`);
+      return {
+        success: true,
+        data: response.data?.request || response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 
+          error.response?.data?.message ||
+          error.response?.data?.error || 
+          error.message || 
+          "Failed to mark as donated",
+      };
+    }
+  },
 };

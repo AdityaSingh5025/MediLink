@@ -1,61 +1,78 @@
 import mongoose from "mongoose";
 
-const RequestSchema = new mongoose.Schema({
-  listingId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Listing",
-    required: true,
+const RequestSchema = new mongoose.Schema(
+  {
+    listingId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Listing",
+      required: [true, "Listing ID is required"],
+      index: true,
+    },
+    requesterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Requester ID is required"],
+      index: true,
+    },
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Owner ID is required"],
+      index: true,
+    },
+    prescriptionDoc: {
+      type: String,
+      default: null,
+    },
+    message: {
+      type: String,
+      default: "",
+      maxlength: [500, "Message cannot exceed 500 characters"],
+    },
+    status: {
+      type: String,
+      enum: {
+        values: [
+          "pending",
+          "approved",
+          "awaiting_confirmation",
+          "completed",
+          "rejected",
+          "cancelled",
+        ],
+        message: "{VALUE} is not a valid status",
+      },
+      default: "pending",
+      index: true,
+    },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+    expiresAt: { type: Date, default: null },
   },
-  requesterId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-
-  ownerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  prescriptionDoc: { type: String, default: null },
-
-  message: { type: String, default: "" },
-  status: {
-    type: String,
-    enum: [
-      "pending",
-      "approved",
-      "awaiting_confirmation",
-      "completed",
-      "rejected",
-      "cancelled",
-    ],
-    default: "pending",
-  },
-
-  createdAt: { type: Date, default: Date.now },
-
-  updatedAt: { type: Date, default: Date.now },
-
-  expiresAt: { type: Date, default: null },
-});
-
+  {
+    timestamps: true,
+  }
+);
 
 RequestSchema.pre("save", function (next) {
   this.updatedAt = new Date();
   next();
 });
 
-// Prevent multiple pending requests for the same listing from the same requester
+RequestSchema.index({ listingId: 1, requesterId: 1 });
+RequestSchema.index({ ownerId: 1, status: 1 });
+RequestSchema.index({ requesterId: 1, status: 1 });
+RequestSchema.index({ createdAt: -1 });
+
 RequestSchema.index(
-  { listingId: 1, requesterId: 1, status: 1 },
+  { listingId: 1, requesterId: 1 },
   {
-    partialFilterExpression: {
-      status: { $in: ["pending", "approved", "completed"] },
-    },
     unique: true,
+    partialFilterExpression: {
+      status: { $in: ["pending", "approved", "awaiting_confirmation"] },
+    },
+    name: "unique_active_request",
   }
 );
 
-// Export the Request model for use in controllers
 export default mongoose.model("Request", RequestSchema);

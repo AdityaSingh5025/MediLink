@@ -4,12 +4,7 @@ export const authApi = {
   signup: async (userData) => {
     try {
       const response = await apiConnector("POST", "/auth/signup", userData);
-      if (!response.success) throw new Error(response.error);
-
-      return {
-        success: true,
-        data: response.data?.data || response.data, // return backend payload
-      };
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -20,36 +15,44 @@ export const authApi = {
 
   verifyEmail: async (email, otp) => {
     try {
-      const bodyData = { email, otp };
-      const response = await apiConnector("POST", "/auth/verify-email", bodyData);
-      if (!response.success) throw new Error(response.error);
-
-      return {
-        success: true,
-        data: response.data || response.data?.data,
-      };
+      const response = await apiConnector("POST", "/auth/verify-email", {
+        email,
+        otp,
+      });
+      return response;
     } catch (error) {
       return {
         success: false,
-        error: error.message || "verification failed",
+        error: error.message || "Verification failed",
       };
     }
   },
 
-  login: async (email,password) => {
+  login: async (email, password) => {
     try {
-      const bodyData = {email,password}
-      const response = await apiConnector("POST", "/auth/login", bodyData);
-      if (!response.success) throw new Error(response.error);
-
-      return {
-        success: true,
-        data: response.data || response.data?.data,
-      };
+      const response = await apiConnector("POST", "/auth/login", {
+        email,
+        password,
+      });
+      return response;
     } catch (error) {
       return {
         success: false,
-        error: error.message || "login failed",
+        error: error.message || "Login failed",
+      };
+    }
+  },
+
+  resendOtp: async (email) => {
+    try {
+      const response = await apiConnector("POST", "/auth/resend-otp", {
+        email,
+      });
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || "Failed to resend OTP",
       };
     }
   },
@@ -57,17 +60,33 @@ export const authApi = {
   logout: async () => {
     try {
       const response = await apiConnector("POST", "/auth/logout");
-      if (!response.success) throw new Error(response.error);
-
-      return {
-        success: true,
-        data: response.data || response.data?.data,
-      };
+      return response;
     } catch (error) {
       return {
         success: false,
-        error: error.message || "login failed",
+        error: error.message || "Logout failed",
       };
     }
+  },
+  forgotPassword: async (email) => {
+    const response = await apiConnector("POST", "/user/forgot-password", {
+      email,
+    });
+
+    return response.success
+      ? { success: true, message: response.data.message }
+      : { success: false, error: response.error };
+  },
+
+  resetPassword: async (token, newPassword, confirmNewPassword) => {
+    const response = await apiConnector("POST", "/user/reset-password", {
+      resetPasswordToken: token,
+      newPassword,
+      confirmNewPassword,
+    });
+
+    return response.success
+      ? { success: true, message: response.data.message }
+      : { success: false, error: response.error };
   },
 };

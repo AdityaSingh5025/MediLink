@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+
 dotenv.config();
 
-// Authentication Middleware
 export const authMiddleware = async (req, res, next) => {
   try {
     let token = null;
@@ -20,7 +20,6 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     let decoded;
-
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
@@ -33,70 +32,94 @@ export const authMiddleware = async (req, res, next) => {
     req.user = {
       id: decoded.id,
       name: decoded.name || "Anonymous",
-      accountType: decoded.accountType,
+      accountType: decoded.accountType || "user",
     };
+
     next();
   } catch (error) {
+    console.error("authMiddleware error:", error);
     return res.status(500).json({
       success: false,
-      message: "Something went wrong in auth middleware",
-      error: error.message,
+      message: "Authentication failed",
     });
   }
 };
 
-// Allows access only if the authenticated user has an admin role
-export const isAdminMiddleware = async (req, res, next) => {
+export const isAdmin = async (req, res, next) => {
   try {
-    if (req.user.accountType !== "admin") {
+    if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: "Permission denied. This route is for Admin only.",
+        message: "Unauthorized - No user found",
       });
     }
+
+    if (req.user.accountType !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied - Admin privileges required",
+      });
+    }
+
     next();
   } catch (error) {
+    console.error("isAdmin error:", error);
     return res.status(500).json({
       success: false,
-      message: "Something went wrong in auth middleware",
-      error: error.message,
+      message: "Authorization check failed",
     });
   }
 };
 
 export const isUser = async (req, res, next) => {
   try {
-    // Check the user's role
-    if (req.user.accountType !== "user") {
+    if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: "Permission denied. This route is for regular users only.",
+        message: "Unauthorized - No user found",
       });
     }
+    const allowedRoles = ["user", "seller", "admin"];
+
+    if (!allowedRoles.includes(req.user.accountType)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied - Invalid account type",
+      });
+    }
+
     next();
   } catch (error) {
+    console.error("isUser error:", error);
     return res.status(500).json({
       success: false,
-      message: "Something went wrong in auth middleware",
-      error: error.message,
+      message: "Authorization check failed",
     });
   }
 };
 
 export const isSeller = async (req, res, next) => {
   try {
-    if (req.user.accountType !== "seller") {
+    if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: "Permission denied. This route is for  seller only.",
+        message: "Unauthorized - No user found",
       });
     }
+
+    if (req.user.accountType !== "seller") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied - Seller privileges required",
+      });
+    }
+
     next();
   } catch (error) {
+    console.error("isSeller error:", error);
     return res.status(500).json({
       success: false,
-      message: "Something went wrong in auth middleware",
-      error: error.message,
+      message: "Authorization check failed",
     });
   }
 };

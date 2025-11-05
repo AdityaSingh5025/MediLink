@@ -1,7 +1,7 @@
 import express from 'express'
 const router = express.Router()
 
-import { authMiddleware, isUser } from '../middleware/authmiddleware.js';
+import { authMiddleware, isUser } from '../middleware/authMiddleware.js';
 import {
   approveRequest,
   cancelRequest,

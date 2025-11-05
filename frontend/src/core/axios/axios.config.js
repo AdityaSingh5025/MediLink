@@ -115,13 +115,6 @@ export const apiConnector = async (
       url,
       ...config,
     };
-    // if (
-    //   bodyData &&
-    //   ["POST", "PUT", "PATCH", "DELETE"].includes(method.toUpperCase())
-    // ) {
-    //   requestConfig.data = bodyData;
-    // }
-
     if (bodyData && !["GET"].includes(method.toUpperCase())) {
       requestConfig.data = bodyData;
     }

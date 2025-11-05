@@ -1,22 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../../shared/components/ui/Button";
-import { Card, CardContent } from "../../../shared/components/ui/Card";
-import { Badge } from "../../../shared/components/ui/Badge";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../../shared/components/ui/Tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../shared/components/ui/Select";
-import { Alert, AlertDescription } from "../../../shared/components/ui/Alert";
+import { useDispatch, useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
   FileText,
@@ -26,348 +11,774 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Send,
   MessageCircle,
   Package,
+  Loader2,
+  Filter,
+  Inbox,
+  SendHorizontal,
+  Eye,
+  ThumbsUp,
+  ThumbsDown,
+  Gift,
+  Check,
+  X as XIcon,
+  Calendar,
+  ChevronDown,
+  RefreshCw,
+  Heart,
+  Star,
 } from "lucide-react";
 import { requestApi } from "../services/requestApi";
+import { setRequests, setLoading as setReduxLoading, setError } from "../store/requestSlice";
 
 export function RequestsPage() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { requests: reduxRequests, loading: reduxLoading } = useSelector((state) => state.request);
+  
   const [activeTab, setActiveTab] = useState("received");
   const [statusFilter, setStatusFilter] = useState("all");
   const [myRequests, setMyRequests] = useState([]);
   const [requestsToMe, setRequestsToMe] = useState([]);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [actionLoading, setActionLoading] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch all requests
-  useEffect(() => {
-    const fetchRequests = async () => {
+  // Fetch requests with better error handling and state management
+  const fetchRequests = useCallback(async (showLoader = true, isRefresh = false) => {
+    if (showLoader) {
       setLoading(true);
-      try {
-        const myRes = await requestApi.getMyRequest("requester");
-        setMyRequests(myRes.success ? myRes.data : []);
+      dispatch(setReduxLoading(true));
+    }
+    
+    if (isRefresh) {
+      setRefreshing(true);
+    }
 
-        const receivedRes = await requestApi.getMyRequest("owner");
-        setRequestsToMe(receivedRes.success ? receivedRes.data : []);
-      } catch (err) {
-        console.error("Fetch error:", err);
-        toast.error("Failed to fetch requests");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRequests();
-  }, []);
-
-  //  Approve / Reject
-  const handleRequestAction = async (requestId, action) => {
     try {
-      const res =
-        action === "approve"
-          ? await requestApi.approveRequest(requestId)
-          : await requestApi.rejectRequest(requestId);
+      const [myRes, receivedRes] = await Promise.all([
+        requestApi.getMyRequest("requester"),
+        requestApi.getMyRequest("owner"),
+      ]);
+
+      // Ensure we always set arrays
+      const myData = Array.isArray(myRes?.data) ? myRes.data : [];
+      const receivedData = Array.isArray(receivedRes?.data) ? receivedRes.data : [];
+
+      setMyRequests(myData);
+      setRequestsToMe(receivedData);
+      
+      // Update Redux store
+      dispatch(setRequests([...myData, ...receivedData]));
+      
+      if (isRefresh) {
+        toast.success("Requests refreshed successfully! ✨");
+      }
+      
+      return { success: true };
+    } catch (err) {
+      console.error("Fetch error:", err);
+      dispatch(setError(err.message));
+      
+      if (!isRefresh) {
+        toast.error("Failed to fetch requests");
+      }
+      
+      setMyRequests([]);
+      setRequestsToMe([]);
+      return { success: false };
+    } finally {
+      setLoading(false);
+      dispatch(setReduxLoading(false));
+      setRefreshing(false);
+    }
+  }, [dispatch]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchRequests();
+  }, [fetchRequests]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchRequests(false, false);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetchRequests]);
+
+  // Handle request actions with optimistic updates
+  const handleRequestAction = async (requestId, action) => {
+    setActionLoading(requestId);
+    
+    // Optimistic update
+    const statusMap = {
+      approve: "approved",
+      reject: "rejected",
+      cancel: "cancelled",
+      donated: "awaiting_confirmation",
+      complete: "completed"
+    };
+
+    const newStatus = statusMap[action];
+    
+    // Store original state for rollback
+    const originalMyRequests = [...myRequests];
+    const originalRequestsToMe = [...requestsToMe];
+    
+    // Apply optimistic update
+    setMyRequests(prev => 
+      prev.map(req => 
+        req._id === requestId ? { ...req, status: newStatus } : req
+      )
+    );
+    
+    setRequestsToMe(prev => 
+      prev.map(req => 
+        req._id === requestId ? { ...req, status: newStatus } : req
+      )
+    );
+
+    try {
+      let res;
+      switch (action) {
+        case "approve":
+          res = await requestApi.approveRequest(requestId);
+          break;
+        case "reject":
+          res = await requestApi.rejectRequest(requestId);
+          break;
+        case "cancel":
+          res = await requestApi.cancelRequest(requestId);
+          break;
+        case "donated":
+          res = await requestApi.markAsDonated(requestId);
+          break;
+        case "complete":
+          res = await requestApi.completeRequest(requestId);
+          break;
+        default:
+          return;
+      }
 
       if (res.success) {
-        toast.success(`Request ${action}d successfully!`);
-        setRequestsToMe((prev) =>
-          prev.map((r) =>
-            r._id === requestId
-              ? { ...r, status: action === "approve" ? "approved" : "rejected" }
-              : r
-          )
+        // Success animation
+        toast.success(
+          <div className="flex items-center gap-2">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring" }}
+            >
+              <CheckCircle className="w-5 h-5 text-green-500" />
+            </motion.div>
+            <span>Request {action}ed successfully!</span>
+          </div>
         );
+        
+        // Fetch fresh data after a delay
+        setTimeout(() => {
+          fetchRequests(false, false);
+        }, 800);
+        
       } else {
+        // Rollback on failure
+        setMyRequests(originalMyRequests);
+        setRequestsToMe(originalRequestsToMe);
         toast.error(res.error || `Failed to ${action} request`);
       }
     } catch (err) {
+      // Rollback on error
+      setMyRequests(originalMyRequests);
+      setRequestsToMe(originalRequestsToMe);
       toast.error(err.message || "Action failed");
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  //  Cancel
-  const handleCancelRequest = async (requestId) => {
-    const res = await requestApi.cancelRequest(requestId);
-    if (res.success) {
-      toast.success("Request cancelled successfully!");
-      setMyRequests((prev) => prev.filter((r) => r._id !== requestId));
-    } else {
-      toast.error(res.error || "Failed to cancel request");
-    }
-  };
-
-  //  Mark as Donated (Donor)
-  const handleMarkAsDonated = async (requestId) => {
+  // Navigate to chat with proper initialization
+  const handleNavigateToChat = async (request) => {
     try {
-      const res = await requestApi.markAsDonated(requestId);
-      if (res.success) {
-        toast.success("Donation marked — awaiting recipient confirmation.");
-        setRequestsToMe((prev) =>
-          prev.map((r) =>
-            r._id === requestId
-              ? { ...r, status: "awaiting_confirmation" }
-              : r
-          )
-        );
-      } else {
-        toast.error(res.error || "Failed to mark as donated");
-      }
-    } catch (err) {
-      toast.error(err.message || "Error marking as donated");
+      const loadingToast = toast.loading("Opening chat...");
+      
+      // Small delay to ensure chat socket is ready
+      setTimeout(() => {
+        toast.dismiss(loadingToast);
+        navigate(`/chat/${request.listingId?._id}`, {
+          state: {
+            participantName: request.requesterId?.name || request.ownerId?.name,
+            listingTitle: request.listingId?.title,
+          }
+        });
+      }, 300);
+    } catch (error) {
+      toast.error("Failed to open chat");
     }
   };
-
-  //  Confirm Received (Recipient)
-  const handleConfirmDonation = async (requestId) => {
-    try {
-      const res = await requestApi.completeRequest(requestId);
-      if (res.success) {
-        toast.success("Donation confirmed 🎉");
-        setMyRequests((prev) =>
-          prev.map((r) =>
-            r._id === requestId ? { ...r, status: "completed" } : r
-          )
-        );
-      } else {
-        toast.error(res.error || "Failed to confirm donation");
-      }
-    } catch (err) {
-      toast.error("Something went wrong while confirming donation");
-    }
-  };
-
-  // Helpers
-  const filterRequests = (requests) =>
-    statusFilter === "all"
-      ? requests
-      : requests.filter((r) => r.status === statusFilter);
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "approved":
-        return "bg-blue-100 text-blue-800";
-      case "awaiting_confirmation":
-        return "bg-purple-100 text-purple-800";
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      case "cancelled":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+    const colors = {
+      pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      approved: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      awaiting_confirmation: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+      completed: "bg-green-500/10 text-green-500 border-green-500/20",
+      rejected: "bg-red-500/10 text-red-500 border-red-500/20",
+      cancelled: "bg-gray-500/10 text-gray-500 border-gray-500/20",
+    };
+    return colors[status] || colors.pending;
   };
 
   const getStatusIcon = (status) => {
-    switch (status) {
-      case "pending":
-        return AlertCircle;
-      case "approved":
-      case "completed":
-      case "awaiting_confirmation":
-        return CheckCircle;
-      case "rejected":
-      case "cancelled":
-        return XCircle;
-      default:
-        return AlertCircle;
-    }
+    const icons = {
+      pending: AlertCircle,
+      approved: CheckCircle,
+      awaiting_confirmation: Clock,
+      completed: Gift,
+      rejected: XCircle,
+      cancelled: XIcon,
+    };
+    return icons[status] || AlertCircle;
   };
 
-  //  Request Card Component
+  const filterRequests = (requests) => {
+    const requestsArray = Array.isArray(requests) ? requests : [];
+    return statusFilter === "all"
+      ? requestsArray
+      : requestsArray.filter((r) => r.status === statusFilter);
+  };
+
+  const getStats = () => {
+    const myRequestsArray = Array.isArray(myRequests) ? myRequests : [];
+    const requestsToMeArray = Array.isArray(requestsToMe) ? requestsToMe : [];
+    const allRequests = [...myRequestsArray, ...requestsToMeArray];
+
+    return [
+      {
+        label: "Total Received",
+        value: requestsToMeArray.length,
+        icon: Inbox,
+        color: "from-blue-500 to-cyan-500",
+      },
+      {
+        label: "Total Sent",
+        value: myRequestsArray.length,
+        icon: SendHorizontal,
+        color: "from-purple-500 to-pink-500",
+      },
+      {
+        label: "Completed",
+        value: allRequests.filter((r) => r?.status === "completed").length,
+        icon: Gift,
+        color: "from-green-500 to-emerald-500",
+      },
+    ];
+  };
+
   const RequestCard = ({ request, isReceived = false }) => {
+    if (!request) return null;
+
     const StatusIcon = getStatusIcon(request.status);
+    const isProcessing = actionLoading === request._id;
+
     return (
-      <Card className="hover-lift animate-slide-up border-0 shadow-lg mb-4">
-        <CardContent className="p-6">
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        whileHover={{ y: -4 }}
+        className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-2xl overflow-hidden shadow-soft hover:shadow-xl transition-all duration-300 group"
+      >
+        <div className="p-6">
           <div className="flex gap-4">
             {/* Image */}
-            <div className="shrink-0">
+            <motion.div
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              className="shrink-0"
+            >
               {request.listingId?.photoURL ? (
                 <img
                   src={request.listingId.photoURL}
                   alt={request.listingId?.title || "Listing"}
-                  className="w-16 h-16 object-cover rounded-lg"
+                  className="w-20 h-20 object-cover rounded-xl border-2 border-border"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
                 />
               ) : (
-                <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <Package className="w-8 h-8 text-gray-400" />
+                <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center border-2 border-border">
+                  <Package className="w-10 h-10 text-primary/50" />
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold text-lg mb-1">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-text mb-2 line-clamp-1 group-hover:text-primary transition-colors">
                     {request.listingId?.title || "Unknown Listing"}
                   </h3>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <User className="w-4 h-4" />
-                    <span>
-                      {isReceived
-                        ? request.requesterId?.name
-                        : request.ownerId?.name}
-                    </span>
+                  
+                  <div className="flex flex-wrap gap-3 text-sm text-muted mb-3">
+                    <motion.div 
+                      className="flex items-center gap-1.5"
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      <User className="w-4 h-4 text-primary" />
+                      <span>
+                        {isReceived
+                          ? request.requesterId?.name || "Unknown"
+                          : request.ownerId?.name || "Unknown"}
+                      </span>
+                    </motion.div>
+                    
+                    {request.listingId?.location?.city && (
+                      <motion.div 
+                        className="flex items-center gap-1.5"
+                        whileHover={{ scale: 1.05 }}
+                      >
+                        <MapPin className="w-4 h-4 text-primary" />
+                        <span>{request.listingId.location.city}</span>
+                      </motion.div>
+                    )}
+                    
+                    <motion.div 
+                      className="flex items-center gap-1.5"
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      <Calendar className="w-4 h-4 text-primary" />
+                      <span>{new Date(request.createdAt).toLocaleDateString()}</span>
+                    </motion.div>
                   </div>
+
+                  {request.message && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-sm text-muted bg-background/50 rounded-lg p-3 mb-3 line-clamp-2"
+                    >
+                      "{request.message}"
+                    </motion.p>
+                  )}
+
+                  {request.prescriptionDoc && (
+                    <motion.a
+                      href={request.prescriptionDoc}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.05, x: 5 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-flex items-center gap-2 text-xs text-primary hover:text-accent transition-colors bg-primary/10 px-3 py-1.5 rounded-lg"
+                    >
+                      <FileText className="w-3 h-3" />
+                      View Prescription
+                    </motion.a>
+                  )}
                 </div>
-                <Badge className={getStatusColor(request.status)}>
-                  <StatusIcon className="w-3 h-3 mr-1" />
+
+                <motion.span
+                  whileHover={{ scale: 1.1 }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold border capitalize whitespace-nowrap flex items-center gap-1.5 ${getStatusColor(
+                    request.status
+                  )}`}
+                >
+                  <StatusIcon className="w-3.5 h-3.5" />
                   {request.status.replace("_", " ")}
-                </Badge>
+                </motion.span>
               </div>
 
-              {/* Buttons */}
-              <div className="flex flex-wrap gap-2 mt-3">
-                {/* Donor side */}
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2 pt-3 border-t border-border/50">
+                {/* Donor Actions */}
                 {isReceived && request.status === "pending" && (
                   <>
-                    <Button
-                      size="sm"
-                      className="bg-blue-600 text-white"
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => handleRequestAction(request._id, "approve")}
+                      disabled={isProcessing}
+                      className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
                     >
+                      {isProcessing ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <ThumbsUp className="w-4 h-4" />
+                      )}
                       Approve
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
+                    </motion.button>
+                    
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => handleRequestAction(request._id, "reject")}
+                      disabled={isProcessing}
+                      className="px-4 py-2 bg-surface border border-red-500/20 text-red-500 rounded-lg font-medium hover:bg-red-500/10 transition-all disabled:opacity-50 flex items-center gap-2"
                     >
+                      <ThumbsDown className="w-4 h-4" />
                       Reject
-                    </Button>
+                    </motion.button>
                   </>
                 )}
 
                 {isReceived && request.status === "approved" && (
-                  <Button
-                    size="sm"
-                    className="bg-green-600 text-white hover:bg-green-700"
-                    onClick={() => handleMarkAsDonated(request._id)}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleRequestAction(request._id, "donated")}
+                    disabled={isProcessing}
+                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
                   >
+                    {isProcessing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Gift className="w-4 h-4" />
+                    )}
                     Mark as Donated
-                  </Button>
+                  </motion.button>
                 )}
 
-                {/* Recipient side */}
+                {/* Recipient Actions */}
                 {!isReceived && request.status === "awaiting_confirmation" && (
-                  <>
-                    <Button
-                      size="sm"
-                      className="bg-green-600 text-white hover:bg-green-700"
-                      onClick={() => handleConfirmDonation(request._id)}
-                    >
-                      ✅ Yes, I received it
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() =>
-                        toast.info("Please contact the donor if not yet received.")
-                      }
-                    >
-                      ❌ Not yet
-                    </Button>
-                  </>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleRequestAction(request._id, "complete")}
+                    disabled={isProcessing}
+                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <CheckCircle className="w-4 h-4" />
+                    )}
+                    Confirm Received
+                  </motion.button>
                 )}
 
                 {!isReceived && request.status === "pending" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleCancelRequest(request._id)}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleRequestAction(request._id, "cancel")}
+                    disabled={isProcessing}
+                    className="px-4 py-2 bg-surface border border-border text-text rounded-lg font-medium hover:bg-background transition-all disabled:opacity-50 flex items-center gap-2"
                   >
-                    Cancel Request
-                  </Button>
+                    <XIcon className="w-4 h-4" />
+                    Cancel
+                  </motion.button>
                 )}
 
+                {/* Chat Button */}
                 {(request.status === "approved" ||
                   request.status === "completed" ||
                   request.status === "awaiting_confirmation") && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => navigate(`/chat/${request.listingId?._id}`)}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleNavigateToChat(request)}
+                    className="px-4 py-2 bg-primary/10 text-primary rounded-lg font-medium hover:bg-primary/20 transition-all flex items-center gap-2"
                   >
-                    <MessageCircle className="w-4 h-4 mr-1" />
+                    <MessageCircle className="w-4 h-4" />
                     Message
-                  </Button>
+                  </motion.button>
                 )}
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Shine Effect */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"
+          style={{ transform: "skewX(-20deg)" }}
+        />
+      </motion.div>
     );
   };
 
-  if (loading) {
+  const stats = getStats();
+
+  if (loading && myRequests.length === 0 && requestsToMe.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-gray-600 animate-pulse">Loading requests...</p>
+      <div className="min-h-screen bg-gradient-to-br from-background via-surface/10 to-background flex items-center justify-center">
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <Loader2 className="w-16 h-16 text-primary mx-auto" />
+          </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-muted mt-4 text-lg"
+          >
+            Loading requests...
+          </motion.p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4">Requests Dashboard</h1>
+    <div className="min-h-screen bg-gradient-to-br from-background via-surface/10 to-background py-8 px-4 sm:px-6 lg:px-8">
+      {/* Animated Background */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.1, 0.2, 0.1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+          }}
+          className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.1, 1],
+            opacity: [0.05, 0.15, 0.05],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            delay: 5,
+          }}
+          className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-accent/20 to-primary/20 rounded-full blur-3xl"
+        />
+      </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="received">Requests to Me</TabsTrigger>
-          <TabsTrigger value="sent">My Requests</TabsTrigger>
-        </TabsList>
+      <div className="max-w-7xl mx-auto">
+        {/* Header with Refresh Button */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 flex justify-between items-start"
+        >
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-bold mb-3">
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Requests Dashboard
+              </span>
+            </h1>
+            <p className="text-muted text-lg">
+              Manage your donation requests and connections
+            </p>
+          </div>
+          
+          <motion.button
+            whileHover={{ scale: 1.1, rotate: 180 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => fetchRequests(false, true)}
+            disabled={refreshing}
+            className="p-3 bg-surface hover:bg-background rounded-xl transition-all shadow-soft hover:shadow-xl"
+            title="Refresh requests"
+          >
+            <RefreshCw className={`w-5 h-5 text-primary ${refreshing ? 'animate-spin' : ''}`} />
+          </motion.button>
+        </motion.div>
 
-        <div className="mt-4">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="awaiting_confirmation">
-                Awaiting Confirmation
-              </SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
+        {/* Stats Cards with Animation */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-soft hover:shadow-xl transition-all group"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted mb-1 font-medium">
+                    {stat.label}
+                  </p>
+                  <motion.p 
+                    className="text-3xl font-bold text-text"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", delay: index * 0.1 + 0.2 }}
+                  >
+                    {stat.value}
+                  </motion.p>
+                </div>
+                <motion.div
+                  whileHover={{ rotate: [0, -10, 10, 0] }}
+                  transition={{ duration: 0.5 }}
+                  className={`w-14 h-14 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
+                >
+                  <stat.icon className="w-7 h-7 text-white" />
+                </motion.div>
+              </div>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Requests To Me */}
-        <TabsContent value="received">
-          {filterRequests(requestsToMe).length > 0 ? (
-            filterRequests(requestsToMe).map((r, i) => (
-              <RequestCard key={r._id || i} request={r} isReceived />
-            ))
-          ) : (
-            <p className="text-center text-gray-500 py-8">
-              No requests received yet.
-            </p>
-          )}
-        </TabsContent>
+        {/* Tabs & Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-2xl shadow-soft p-6 mb-6"
+        >
+          {/* Tabs */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setActiveTab("received")}
+              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
+                activeTab === "received"
+                  ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg"
+                  : "bg-background text-muted hover:text-text"
+              }`}
+            >
+              <Inbox className="w-5 h-5 inline mr-2" />
+              Requests to Me ({Array.isArray(requestsToMe) ? requestsToMe.length : 0})
+            </motion.button>
 
-        {/* My Requests */}
-        <TabsContent value="sent">
-          {filterRequests(myRequests).length > 0 ? (
-            filterRequests(myRequests).map((r, i) => (
-              <RequestCard key={r._id || i} request={r} />
-            ))
-          ) : (
-            <p className="text-center text-gray-500 py-8">
-              You haven't made any requests yet.
-            </p>
-          )}
-        </TabsContent>
-      </Tabs>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setActiveTab("sent")}
+              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
+                activeTab === "sent"
+                  ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg"
+                  : "bg-background text-muted hover:text-text"
+              }`}
+            >
+              <SendHorizontal className="w-5 h-5 inline mr-2" />
+              My Requests ({Array.isArray(myRequests) ? myRequests.length : 0})
+            </motion.button>
+          </div>
+
+          {/* Filter */}
+          <div className="space-y-3">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex sm:hidden items-center justify-between w-full px-4 py-2 bg-background rounded-xl text-text font-medium"
+            >
+              <span className="flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Filter by Status
+              </span>
+              <motion.div
+                animate={{ rotate: showFilters ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ChevronDown className="w-5 h-5" />
+              </motion.div>
+            </button>
+
+            <motion.div
+              initial={false}
+              animate={{
+                height: showFilters || window.innerWidth >= 640 ? "auto" : 0,
+                opacity: showFilters || window.innerWidth >= 640 ? 1 : 0,
+              }}
+              className="overflow-hidden"
+            >
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full sm:w-64 px-4 py-2 bg-background border border-border rounded-xl text-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all cursor-pointer"
+              >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="awaiting_confirmation">Awaiting Confirmation</option>
+                <option value="completed">Completed</option>
+                <option value="rejected">Rejected</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Requests List */}
+        <div className="space-y-4">
+          <AnimatePresence mode="wait">
+            {activeTab === "received" ? (
+              filterRequests(requestsToMe).length > 0 ? (
+                filterRequests(requestsToMe).map((request, index) => (
+                  <RequestCard 
+                    key={request._id || index} 
+                    request={request} 
+                    isReceived 
+                  />
+                ))
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="text-center py-16"
+                >
+                  <motion.div
+                    animate={{ 
+                      y: [0, -10, 0],
+                      rotate: [0, 5, -5, 0] 
+                    }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity 
+                    }}
+                  >
+                    <Inbox className="w-20 h-20 text-muted/30 mx-auto mb-4" />
+                  </motion.div>
+                  <h3 className="text-xl font-semibold text-text mb-2">
+                    No requests received yet
+                  </h3>
+                  <p className="text-muted">
+                    Requests from others will appear here
+                  </p>
+                </motion.div>
+              )
+            ) : filterRequests(myRequests).length > 0 ? (
+              filterRequests(myRequests).map((request, index) => (
+                <RequestCard 
+                  key={request._id || index} 
+                  request={request} 
+                />
+              ))
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="text-center py-16"
+              >
+                <motion.div
+                  animate={{ 
+                    y: [0, -10, 0],
+                    rotate: [0, -5, 5, 0] 
+                  }}
+                  transition={{ 
+                    duration: 3,
+                    repeat: Infinity 
+                  }}
+                >
+                  <SendHorizontal className="w-20 h-20 text-muted/30 mx-auto mb-4" />
+                </motion.div>
+                <h3 className="text-xl font-semibold text-text mb-2">
+                  No requests sent yet
+                </h3>
+                <p className="text-muted">
+                  Start requesting items to see them here
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 }

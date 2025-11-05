@@ -2,102 +2,99 @@ import { apiConnector } from "../../../../core/axios/axios.config";
 
 export const userProfileApi = {
   saveprofile: async (userData) => {
-    try {
-      const response = await apiConnector(
-        "POST",
-        "/profile/saveprofile",
-        userData
-      );
-      if (!response.success) throw new Error(response.error);
+    const response = await apiConnector(
+      "POST",
+      "/profile/saveprofile",
+      userData
+    );
 
+    if (response.success) {
       return {
         success: true,
-        data: response.data?.data || response.data, // return backend payload
+        data: response.data.data, // Backend returns {success, message, data}
+        message: response.data.message,
       };
-    } catch (error) {
+    } else {
       return {
         success: false,
-        error: error.message || "failed to create/update profile",
+        error: response.error,
       };
     }
   },
 
   updateUserInfo: async (userData) => {
-    try {
-      const response = await apiConnector(
-        "PUT",
-        "/user/update-user-info",
-        userData
-      );
-      if (!response.success) throw new Error(response.error);
+    const response = await apiConnector(
+      "PUT",
+      "/user/update-user-info",
+      userData
+    );
 
+    if (response.success) {
       return {
         success: true,
-        data: response.data?.data || response.data, // return backend payload
+        data: response.data.data,
+        message: response.data.message,
       };
-    } catch (error) {
+    } else {
       return {
         success: false,
-        error: error.message || "failed to update user info",
+        error: response.error,
       };
     }
   },
 
-  updatePassword: async (userData) => {
-    try {
-      const response = await apiConnector(
-        "PUT",
-        "/user/update-password",
-        userData
-      );
-      if (!response.success) throw new Error(response.error);
+  updatePassword: async (passwordData) => {
+    const response = await apiConnector(
+      "PUT",
+      "/user/update-password",
+      passwordData
+    );
 
+    if (response.success) {
       return {
         success: true,
-        data: response.data?.data || response.data, // return backend payload
+        message: response.data.message,
       };
-    } catch (error) {
+    } else {
       return {
         success: false,
-        error: error.message || "failed to update password",
+        error: response.error,
       };
     }
   },
 
-  deleteAccount: async (password) => {
-    try {
+  deleteAccount: async (passwordData) => {
+    const response = await apiConnector(
+      "DELETE",
+      "/user/delete-account",
+      passwordData
+    );
 
-      const response = await apiConnector(
-        "DELETE",
-        "/user/delete-account",
-        password
-      );
-      if (!response.success) throw new Error(response.error);
-
+    if (response.success) {
       return {
         success: true,
-        data: response.data?.data || response.data, // return backend payload
+        message: response.data.message,
       };
-    } catch (error) {
+    } else {
       return {
         success: false,
-        error: error.message || "failed to delete account",
+        error: response.error,
       };
     }
   },
+
   getUserDetails: async () => {
-    try {
-      const response = await apiConnector("GET", "/profile/getuserdetails");
-      if (!response.success) throw new Error(response.error);
+    const response = await apiConnector("GET", "/profile/getuserdetails");
 
+    if (response.success) {
       return {
         success: true,
-        data: response.data?.data || response.data,
+        data: response.data.data,
       };
-    } catch (error) {
+    } else {
       return {
         success: false,
-        error: error.message || "Failed to fetch user details",
+        error: response.error,
       };
     }
   },

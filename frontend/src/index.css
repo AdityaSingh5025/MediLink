@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* 🎨 Updated Theme — Rich Blue 900 Dark Mode */
+
 @theme {
   --color-background: #020817;   /* Rich Blue 900 — main background */
   --color-surface: #0B1228;      /* Slightly lighter surface tone */
@@ -58,7 +58,7 @@
   }
 }
 
-/* 🌈 Utilities */
+/*  Utilities */
 @layer utilities {
   .bg-gradient-medilink {
     background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
@@ -82,4 +82,25 @@
 
 .animate-fade-in {
   animation: fade-in 0.25s ease-in-out;
+}
+
+/* Add to your global CSS file */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 3s ease infinite;
+}
+
+.bg-300\% {
+  background-size: 300% 300%;
 }

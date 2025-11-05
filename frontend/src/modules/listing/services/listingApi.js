@@ -3,132 +3,88 @@ import { apiConnector } from "../../../core/axios/axios.config";
 export const listingApi = {
   // Create a new listing
   createListing: async (data) => {
-    try {
-      const response = await apiConnector("POST", "/listing/create-listing", data);
-      if (!response.success) throw new Error(response.error);
-
-      return {
-        success: true,
-        data: response.data?.data || response.data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || "Failed to create listing",
-      };
-    }
+    const response = await apiConnector("POST", "/listing/create-listing", data);
+    
+    return response.success
+      ? { success: true, data: response.data.data, message: response.data.message }
+      : { success: false, error: response.error };
   },
 
-  // Get all listings (supports filters)
+  // Get all listings (with filters)
   getAllListings: async (filters = {}) => {
-    try {
-      const queryString = new URLSearchParams(filters).toString();
-      const url = queryString
-        ? `/listing/get-all-listing?${queryString}`
-        : "/listing/get-all-listing";
+    const queryString = new URLSearchParams(
+      Object.entries(filters).filter(([_, v]) => v)
+    ).toString();
+    
+    const url = queryString
+      ? `/listing/get-all-listing?${queryString}`
+      : "/listing/get-all-listing";
 
-      const response = await apiConnector("GET", url);
-      if (!response.success) throw new Error(response.error);
-
-      return {
-        success: true,
-        data: response.data || response.data?.data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || "Failed to fetch listings",
-      };
-    }
+    const response = await apiConnector("GET", url);
+    
+    return response.success
+      ? { 
+          success: true, 
+          data: response.data.data || response.data,
+          pagination: response.data.pagination
+        }
+      : { success: false, error: response.error };
   },
 
-  // Get a specific listing by ID
+  // Get single listing
   getListing: async (id) => {
-    try {
-      const response = await apiConnector("GET", `/listing/get-listing/${id}`);
-      if (!response.success) throw new Error(response.error);
+    const response = await apiConnector("GET", `/listing/get-listing/${id}`);
+    
+    return response.success
+      ? { success: true, data: response.data.data }
+      : { success: false, error: response.error };
+  },
 
-      return {
-        success: true,
-        data: response.data || response.data?.data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || "Failed to fetch listing",
-      };
-    }
+  // Get user's listings
+  getMyListing: async (filters = {}) => {
+    const queryString = new URLSearchParams(
+      Object.entries(filters).filter(([_, v]) => v)
+    ).toString();
+    
+    const url = queryString
+      ? `/listing/mylisting?${queryString}`
+      : "/listing/mylisting";
+
+    const response = await apiConnector("GET", url);
+    
+    return response.success
+      ? { success: true, data: response.data.data, count: response.data.count }
+      : { success: false, error: response.error };
+  },
+
+  // Update listing
+  updateListing: async (id, data) => {
+    const response = await apiConnector("PUT", `/listing/update-listing/${id}`, data);
+    
+    return response.success
+      ? { success: true, data: response.data.data, message: response.data.message }
+      : { success: false, error: response.error };
   },
 
   // Update listing status
-  updateListingStatus: async (id, data) => {
-    try {
-      const response = await apiConnector("PATCH", `/listing/update-listing-status/${id}`, data);
-      if (!response.success) throw new Error(response.error);
-
-      return {
-        success: true,
-        data: response.data || response.data?.data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || "Failed to update listing status",
-      };
-    }
+  updateListingStatus: async (id, status) => {
+    const response = await apiConnector(
+      "PATCH",
+      `/listing/update-listing-status/${id}`,
+      { status }
+    );
+    
+    return response.success
+      ? { success: true, data: response.data.data, message: response.data.message }
+      : { success: false, error: response.error };
   },
 
-  // Update listing details
-  updateListing: async (id, data) => {
-    try {
-      const response = await apiConnector("PUT", `/listing/update-listing/${id}`, data);
-      if (!response.success) throw new Error(response.error);
-
-      return {
-        success: true,
-        data: response.data || response.data?.data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || "Failed to update listing",
-      };
-    }
-  },
-
-  // Delete a listing
+  // Delete listing
   deleteListing: async (id) => {
-    try {
-      const response = await apiConnector("DELETE", `/listing/delete-listing/${id}`);
-      if (!response.success) throw new Error(response.error);
-
-      return {
-        success: true,
-        data: response.data || response.data?.data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || "Failed to delete listing",
-      };
-    }
-  },
-
-  // Get listings created by the logged-in user
-  getMyListing: async () => {
-    try {
-      const response = await apiConnector("GET", "/listing/mylisting");
-      if (!response.success) throw new Error(response.error);
-
-      return {
-        success: true,
-        data: response.data?.listings || [],
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message || "Failed to fetch user listings",
-      };
-    }
+    const response = await apiConnector("DELETE", `/listing/delete-listing/${id}`);
+    
+    return response.success
+      ? { success: true, message: response.data.message }
+      : { success: false, error: response.error };
   },
 };

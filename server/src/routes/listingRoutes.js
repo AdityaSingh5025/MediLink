@@ -1,10 +1,9 @@
 import express from 'express'
 import {createListing,getAllListings,getListing,updateListingStatus,deleteListing, updateListing, getMyListings} from '../controllers/listing/listingController.js'
-import { authMiddleware, isUser } from '../middleware/authmiddleware.js';
+import { authMiddleware, isUser } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// addd auth ,owner middleware 
 
 router.post('/create-listing',authMiddleware,isUser,createListing)
 router.get('/get-all-listing',getAllListings)
