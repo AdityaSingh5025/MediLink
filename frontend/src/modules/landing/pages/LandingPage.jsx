@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Heart,
   ArrowRight,
@@ -16,9 +16,6 @@ import Footer from "../../../shared/components/layouts/Footer";
 
 export function LandingPage() {
   const isAuthenticated = !!localStorage.getItem("accessToken");
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   const features = [
     {
@@ -82,7 +79,7 @@ export function LandingPage() {
         {/* Base gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5" />
 
-        {/* Fading Circles - More visible */}
+        {/* Fading Circles */}
         {fadingCircles.map((circle, i) => (
           <motion.div
             key={`circle-${i}`}
@@ -331,7 +328,7 @@ export function LandingPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative perspective-1000"
           >
-            <motion.div style={{ y }} className="relative">
+            <div className="relative">
               {/* Animated glow */}
               <motion.div
                 animate={{
@@ -351,6 +348,7 @@ export function LandingPage() {
                 transition={{ duration: 0.3 }}
                 src={heroImage}
                 alt="Medical donation illustration"
+                loading="eager"
                 className="relative z-10 w-full rounded-3xl shadow-2xl"
               />
 
@@ -374,14 +372,16 @@ export function LandingPage() {
                   }}
                 />
               ))}
-            </motion.div>
+            </div>
           </motion.div>
         </div>
       </section>
 
       {/* Stats Section */}
       <motion.section
-        style={{ opacity }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
         className="bg-surface/50 backdrop-blur-sm border-y border-border py-16 relative overflow-hidden"
       >
         {/* Sliding line */}
@@ -397,10 +397,9 @@ export function LandingPage() {
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, scale: 0.5 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{
-                  delay: idx * 0.1,
+                  delay: 0.6 + idx * 0.1,
                   type: "spring",
                   stiffness: 200,
                   damping: 15,
@@ -419,9 +418,8 @@ export function LandingPage() {
                 </div>
                 <motion.div
                   initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 + 0.2, type: "spring" }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.6 + idx * 0.1 + 0.2, type: "spring" }}
                   className="text-3xl font-bold text-primary"
                 >
                   {stat.value}
@@ -437,9 +435,8 @@ export function LandingPage() {
       <section className="w-full max-w-6xl mx-auto px-6 py-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
           className="text-center mb-16 space-y-4"
         >
           <h2 className="text-3xl md:text-4xl font-bold">
@@ -458,10 +455,9 @@ export function LandingPage() {
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  delay: idx * 0.1,
+                  delay: 0.9 + idx * 0.1,
                   type: "spring",
                   stiffness: 100,
                 }}
@@ -537,9 +533,8 @@ export function LandingPage() {
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.2 }}
             className="relative max-w-4xl mx-auto px-6 py-20 text-center space-y-6"
           >
             <motion.h2
