@@ -225,7 +225,7 @@ export const forgotPassword = async (req, res) => {
       await user.save();
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = process.env.FRONTEND_URL || "medi-link-gamma.vercel.app";
     const resetUrl = `${frontendUrl}/reset-password/${token}`;
 
     const htmlTemplate = templates.resetLink
