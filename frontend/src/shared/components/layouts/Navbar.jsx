@@ -37,9 +37,8 @@ const Navbar = () => {
             className="flex items-center gap-2 cursor-pointer"
           >
             <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              className="w-9 h-9 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center shadow-glow"
+            
+          className="w-9 h-9 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center shadow-glow"
             >
               <Heart className="w-5 h-5 text-white" fill="currentColor" />
             </motion.div>
