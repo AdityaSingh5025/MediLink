@@ -48,7 +48,12 @@ app.use(
         return cb(null, true);
       }
 
-      // console.log(" CORS blocked origin:", origin);
+      // Allow any localhost in development
+      if (process.env.NODE_ENV === "development" && origin && origin.startsWith("http://localhost:")) {
+        return cb(null, true);
+      }
+
+      console.log(" CORS blocked origin:", origin);
       cb(new Error("Not allowed by CORS"));
     },
     credentials: true,
@@ -67,8 +72,8 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/leaderboard", leaderBoardRoutes);
 
 // Health check
-app.get("/api/health", (req, res) => res.json({ 
-  ok: true, 
+app.get("/api/health", (req, res) => res.json({
+  ok: true,
   timestamp: new Date().toISOString(),
   environment: process.env.NODE_ENV || 'development'
 }));
@@ -97,17 +102,17 @@ const io = new Server(server, {
 io.use(async (socket, next) => {
   try {
     const token = socket.handshake.auth?.token;
-    
+
     if (!token) {
       console.log("Socket connection rejected: No token");
       return next(new Error("Authentication required"));
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     // Fetch user details
     const user = await User.findById(decoded.id).select('name email avatar');
-    
+
     if (!user) {
       // console.log("Socket connection rejected: User not found");
       return next(new Error("User not found"));
@@ -129,7 +134,7 @@ io.use(async (socket, next) => {
 });
 
 // Track online users
-const onlineUsers = new Map(); 
+const onlineUsers = new Map();
 
 // Socket Event Handlers
 io.on("connection", (socket) => {
@@ -147,7 +152,7 @@ io.on("connection", (socket) => {
       // console.log(`${userName || socket.user.name} attempting to join room: ${listingId}`);
 
       const chat = await Chat.findOne({ listingId });
-      
+
       if (!chat) {
         // console.log(`Chat not found for listing: ${listingId}`);
         return socket.emit("error", { message: "Chat not found" });
@@ -162,10 +167,10 @@ io.on("connection", (socket) => {
       console.log(`${socket.user.name} joined room: ${listingId}`);
 
       // Notify user of successful join
-      socket.emit("joinSuccess", { 
-        listingId, 
+      socket.emit("joinSuccess", {
+        listingId,
         chatId: chat._id,
-        participants: chat.participants 
+        participants: chat.participants
       });
 
       // Notify others in the room
@@ -200,7 +205,7 @@ io.on("connection", (socket) => {
 
       // Find chat
       const chat = await Chat.findOne({ listingId });
-      
+
       if (!chat) {
         const error = { error: "Chat not found" };
         if (callback) callback(error);
@@ -249,15 +254,15 @@ io.on("connection", (socket) => {
 
       // Send success callback
       if (callback) {
-        callback({ 
-          success: true, 
-          message: messageToSend 
+        callback({
+          success: true,
+          message: messageToSend
         });
       }
     } catch (error) {
       console.error("sendMessage error:", error);
       const errorResponse = { error: "Failed to send message" };
-      
+
       if (callback) {
         callback(errorResponse);
       } else {
@@ -270,7 +275,7 @@ io.on("connection", (socket) => {
   socket.on("typing", ({ listingId, userId, userName }) => {
     try {
       // console.log(`${userName || socket.user.name} is typing in ${listingId}`);
-      
+
       socket.to(listingId).emit("userTyping", {
         userId: socket.user.id,
         userName: socket.user.name,
@@ -357,7 +362,7 @@ process.on("unhandledRejection", (err) => {
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
   console.error(err.stack);
-  
+
   // Only exit for fatal errors
   if (err.fatal) {
     console.error("Fatal error detected, shutting down...");

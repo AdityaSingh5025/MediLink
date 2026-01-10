@@ -8,7 +8,7 @@ import {
 const envBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const API_BASE_URL = envBaseUrl
   ? (envBaseUrl.endsWith("/api") ? envBaseUrl : `${envBaseUrl}/api`)
-  : "http://localhost:5000/api";
+  : "http://localhost:5001/api";
 
 // Create axios instance
 export const axiosInstance = axios.create({
