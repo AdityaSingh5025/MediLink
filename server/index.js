@@ -27,6 +27,7 @@ cloudinary();
 
 app.use(cookieParser());
 app.use(express.json());
+app.set("trust proxy", 1); // Enable trust proxy for secure cookies behind Vercel/Zeabur proxies
 
 const allowedOrigins = process.env.FRONTEND_URLS?.split(",") || [
   "http://localhost:5173",
@@ -371,7 +372,7 @@ process.on("uncaughtException", (err) => {
 });
 
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server & Socket.IO running on port ${PORT}`);

@@ -30,7 +30,7 @@ const VerifyEmailForm = ({ email, onVerifySuccess, onBack }) => {
 
   const handleChange = (index, value) => {
     if (value.length > 1) return;
-    
+
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
@@ -59,11 +59,11 @@ const VerifyEmailForm = ({ email, onVerifySuccess, onBack }) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text").slice(0, 6);
     const newOtp = [...otp];
-    
+
     for (let i = 0; i < pastedData.length && i < 6; i++) {
       newOtp[i] = pastedData[i];
     }
-    
+
     setOtp(newOtp);
     inputRefs.current[Math.min(pastedData.length, 5)]?.focus();
 
@@ -75,7 +75,7 @@ const VerifyEmailForm = ({ email, onVerifySuccess, onBack }) => {
 
   const handleVerify = async (otpCode = null) => {
     const code = otpCode || otp.join("");
-    
+
     if (code.length !== 6) {
       toast.error("Please enter all 6 digits");
       return;
@@ -85,7 +85,7 @@ const VerifyEmailForm = ({ email, onVerifySuccess, onBack }) => {
 
     try {
       const result = await authApi.verifyEmail(email, code);
-      
+
       if (result.success) {
         toast.success("Email verified successfully! 🎉");
         setTimeout(() => {
@@ -113,9 +113,9 @@ const VerifyEmailForm = ({ email, onVerifySuccess, onBack }) => {
     setIsResending(true);
 
     try {
-      // Trigger signup endpoint again which will resend OTP
-      const result = await authApi.signup({ email });
-      
+      // Trigger resend endpoint
+      const result = await authApi.resendOtp(email);
+
       if (result.success) {
         toast.success("New verification code sent! 📧");
         setTimeLeft(300);
@@ -161,7 +161,7 @@ const VerifyEmailForm = ({ email, onVerifySuccess, onBack }) => {
         >
           <Mail className="w-8 h-8 text-white" />
         </motion.div>
-        
+
         <h2 className="text-2xl font-bold text-white">Verify Your Email</h2>
         <p className="text-gray-400 text-sm">
           We've sent a 6-digit code to

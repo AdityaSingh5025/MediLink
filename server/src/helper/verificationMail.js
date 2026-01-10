@@ -5,5 +5,8 @@ export const sendVerificationEmail = async (email, otp) => {
   const htmlTemplate = templates.otpMail
     .replace("{{otp}}", otp)
     .replace("{{year}}", new Date().getFullYear());
-  await mailer(email, "Verification OTP", htmlTemplate);
+  const response = await mailer(email, "Verification OTP", htmlTemplate);
+  if (!response.success) {
+    throw new Error(response.error || "Failed to send email");
+  }
 };

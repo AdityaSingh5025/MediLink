@@ -28,26 +28,26 @@ export function useChatSocket(listingId, handlers = {}) {
 
     const setupSocket = () => {
       const currentToken = store.getState().auth.accessToken;
-      
+
       if (!currentToken) {
         console.error("No access token found");
         return;
       }
 
-      const SOCKET_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') 
-        || "http://localhost:5000";
+      const SOCKET_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '')
+        || "http://localhost:5001";
 
       // Reuse existing socket if it's connected and authenticated
       if (globalSocket?.connected && globalSocket?.auth?.token === currentToken) {
         // console.log("Reusing existing socket connection");
         socketRef.current = globalSocket;
-        
+
         // Leave old room if different
         if (currentListingId && currentListingId !== listingId) {
           // console.log("Leaving old room:", currentListingId);
           globalSocket.emit("leaveRoom", { listingId: currentListingId });
         }
-        
+
         // Join new room
         joinRoom(globalSocket, listingId, userInfo);
         currentListingId = listingId;
@@ -67,7 +67,7 @@ export function useChatSocket(listingId, handlers = {}) {
       const socket = io(SOCKET_URL, {
         withCredentials: true,
         transports: ["websocket", "polling"],
-        auth: { 
+        auth: {
           token: currentToken,
           userId: userInfo._id || userInfo.id,
           userName: userInfo.name
@@ -91,7 +91,7 @@ export function useChatSocket(listingId, handlers = {}) {
         setIsConnected(true);
         setReconnectAttempts(0);
         toast.dismiss(); // Clear any error toasts
-        
+
         // Join room after connection
         joinRoom(socket, listingId, userInfo);
       });
@@ -108,7 +108,7 @@ export function useChatSocket(listingId, handlers = {}) {
         if (!isComponentMounted) return;
         console.log("Reconnect attempt:", attemptNumber);
         setReconnectAttempts(attemptNumber);
-        
+
         if (attemptNumber === 1) {
           toast.loading("Reconnecting...", { id: "reconnecting" });
         }
@@ -119,7 +119,7 @@ export function useChatSocket(listingId, handlers = {}) {
         console.log("Reconnected after", attemptNumber, "attempts");
         toast.dismiss("reconnecting");
         toast.success("Reconnected!", { duration: 2000 });
-        
+
         // Rejoin room after reconnection
         joinRoom(socket, listingId, userInfo);
       });
@@ -187,7 +187,7 @@ export function useChatSocket(listingId, handlers = {}) {
       socket.on("connect_error", (err) => {
         if (!isComponentMounted) return;
         console.error("Connection error:", err.message);
-        
+
         if (err.message?.includes("jwt") || err.message?.includes("token")) {
           console.warn("Token issue, will retry...");
           // Let socket.io handle reconnection
@@ -204,7 +204,7 @@ export function useChatSocket(listingId, handlers = {}) {
 
       isJoiningRef.current = true;
       // console.log("Joining room:", roomId);
-      
+
       socket.emit("joinRoom", {
         listingId: roomId,
         userId: user._id || user.id,
@@ -220,7 +220,7 @@ export function useChatSocket(listingId, handlers = {}) {
       isComponentMounted = false;
       setIsRoomJoined(false);
       isJoiningRef.current = false;
-      
+
       // Don't disconnect global socket, just leave the room
       if (globalSocket && currentListingId === listingId) {
         console.log("Leaving room:", listingId);
@@ -273,7 +273,7 @@ export function useChatSocket(listingId, handlers = {}) {
 
       socket.emit("sendMessage", messageData, (response) => {
         clearTimeout(timeoutId);
-        
+
         if (response?.error) {
           console.error("Send failed:", response.error);
           toast.error("Failed to send message");
@@ -289,7 +289,7 @@ export function useChatSocket(listingId, handlers = {}) {
   // Send typing indicator
   const sendTyping = useCallback((userName) => {
     if (!socketRef.current?.connected || !isRoomJoined) return;
-    
+
     socketRef.current.emit("typing", {
       listingId,
       userId: userInfo._id || userInfo.id,
@@ -300,15 +300,15 @@ export function useChatSocket(listingId, handlers = {}) {
   // Stop typing indicator
   const stopTyping = useCallback(() => {
     if (!socketRef.current?.connected || !isRoomJoined) return;
-    
+
     socketRef.current.emit("stopTyping", {
       listingId,
       userId: userInfo._id || userInfo.id
     });
   }, [listingId, userInfo, isRoomJoined]);
 
-  return { 
-    sendMessage, 
+  return {
+    sendMessage,
     isConnected: isConnected && isRoomJoined,
     sendTyping,
     stopTyping,

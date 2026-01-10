@@ -54,7 +54,7 @@ export const signup = async (req, res) => {
 
           await sendVerificationEmail(email, otp);
           // console.log("email sent",otp);
-          
+
         } catch (emailError) {
           console.error("Email sending failed:", emailError);
           return res.status(500).json({
@@ -203,6 +203,56 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
+// resend otp
+export const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ success: false, message: "Email already verified. Please login." });
+    }
+
+    // Rate limiting: Check if OTP was sent recently (e.g., last 60 seconds)
+    if (user.lastOtpSentAt && Date.now() - user.lastOtpSentAt.getTime() < 60 * 1000) {
+      const waitSeconds = Math.ceil((60 * 1000 - (Date.now() - user.lastOtpSentAt.getTime())) / 1000);
+      return res.status(429).json({
+        success: false,
+        message: `Please wait ${waitSeconds} seconds before requesting another OTP.`,
+      });
+    }
+
+    const { otp, hashedOtp, otpExpiry, lastOtpSentAt } = await generateOtp(email);
+
+    user.hashedOtp = hashedOtp;
+    user.otpExpiry = otpExpiry;
+    user.lastOtpSentAt = lastOtpSentAt;
+    await user.save();
+
+    await sendVerificationEmail(email, otp);
+
+    return res.status(200).json({
+      success: true,
+      message: "Verification code sent successfully",
+    });
+  } catch (error) {
+    console.error("Resend OTP error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to resend OTP. Please try again.",
+    });
+  }
+};
+
 // login
 export const login = async (req, res) => {
   try {
@@ -334,7 +384,7 @@ export const logout = (req, res) => {
   try {
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       secure: process.env.NODE_ENV === "production",
       path: "/",
     });
