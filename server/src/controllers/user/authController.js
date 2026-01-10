@@ -53,6 +53,8 @@ export const signup = async (req, res) => {
           await existingUser.save();
 
           await sendVerificationEmail(email, otp);
+          // console.log("email sent",otp);
+          
         } catch (emailError) {
           console.error("Email sending failed:", emailError);
           return res.status(500).json({
