@@ -10,6 +10,13 @@
   --color-border: #1E293B;       /* Subtle border */
   --color-text: #E5E7EB;         /* Main text */
   --color-text-muted: #94A3B8;   /* Muted text */
+  --toast-width: 356px;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --toast-width: 90vw;
+  }
 }
 
 /* 🌌 Base Layer */
@@ -32,7 +39,7 @@
 /* 🧱 Components */
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)]
+    @apply bg-linear-to-r from-[var(--color-primary)] to-[var(--color-accent)]
            hover:from-blue-600 hover:to-blue-700
            text-white font-medium py-2 px-4 rounded-lg
            transition-all duration-200 shadow-md hover:shadow-lg;
@@ -60,12 +67,16 @@
 
 /*  Utilities */
 @layer utilities {
-  .bg-gradient-medilink {
+  .bg-linear-medilink {
     background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
   }
 
   .hover-lift {
     @apply transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)];
+  }
+
+  .will-change-transform {
+    will-change: transform;
   }
 }
 

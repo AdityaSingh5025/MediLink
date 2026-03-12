@@ -168,7 +168,7 @@ export default function PasswordSection() {
         disabled={loading}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg"
+        className="w-full py-3 bg-linear-to-r from-primary to-accent text-white rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg"
       >
         {loading ? (
           <Loader2 className="w-5 h-5 animate-spin" />

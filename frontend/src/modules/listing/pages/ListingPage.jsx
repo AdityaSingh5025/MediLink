@@ -44,16 +44,13 @@ export const PublicListingPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
 
-  // Location-based filtering
   const [userLocation, setUserLocation] = useState(null);
   const [sortByNearest, setSortByNearest] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
 
-  // Selected listing for request modal
   const [selectedListing, setSelectedListing] = useState(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
 
-  // Fetch all listings
   useEffect(() => {
     const fetchListings = async () => {
       dispatch(setLoading(true));
@@ -70,7 +67,6 @@ export const PublicListingPage = () => {
     fetchListings();
   }, [dispatch]);
 
-  // Distance calculator
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
     const R = 6371;
@@ -85,11 +81,10 @@ export const PublicListingPage = () => {
     return R * c;
   };
 
-  // Apply filters
-  useEffect(() => {
-    if (!Array.isArray(listing)) return;
+  const filteredData = React.useMemo(() => {
+    if (!Array.isArray(listing)) return [];
 
-    let filteredData = listing.filter((item) => {
+    let data = listing.filter((item) => {
       const matchesSearch =
         item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -111,7 +106,7 @@ export const PublicListingPage = () => {
     });
 
     if (sortByNearest && userLocation) {
-      filteredData = filteredData
+      data = data
         .map((item) => {
           const dist = calculateDistance(
             userLocation.lat,
@@ -124,7 +119,7 @@ export const PublicListingPage = () => {
         .sort((a, b) => a.distance - b.distance);
     }
 
-    setFiltered(filteredData);
+    return data;
   }, [
     searchQuery,
     selectedType,
@@ -135,6 +130,10 @@ export const PublicListingPage = () => {
     sortByNearest,
     userLocation,
   ]);
+
+  useEffect(() => {
+    setFiltered(filteredData);
+  }, [filteredData]);
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -215,7 +214,6 @@ export const PublicListingPage = () => {
   const types = ["all", "medicine", "equipment"];
   const statuses = ["all", "available", "reserved", "donated"];
 
-  // Quick stats
   const stats = [
     {
       label: "Total Available",
@@ -237,7 +235,6 @@ export const PublicListingPage = () => {
     },
   ];
 
-  // Container variants for stagger effect
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -261,8 +258,7 @@ export const PublicListingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-surface/10 to-background py-6 sm:py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Animated Background */}
+    <div className="min-h-screen bg-linear-to-br from-background via-surface/10 to-background py-6 sm:py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <motion.div
           animate={{
@@ -275,7 +271,7 @@ export const PublicListingPage = () => {
             repeat: Infinity,
             ease: "linear",
           }}
-          className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl"
+          className="absolute top-0 right-0 w-[600px] h-[600px] bg-linear-to-br from-primary/10 to-accent/10 rounded-full blur-2xl"
         />
         <motion.div
           animate={{
@@ -288,11 +284,10 @@ export const PublicListingPage = () => {
             repeat: Infinity,
             ease: "linear",
           }}
-          className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-accent/20 to-primary/20 rounded-full blur-3xl"
+          className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-linear-to-br from-accent/20 to-primary/20 rounded-full blur-3xl"
         />
       </div>
 
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -311,7 +306,7 @@ export const PublicListingPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient bg-300%">
+              <span className="bg-linear-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient bg-300%">
                 Medical Donations
               </span>
             </motion.h1>
@@ -325,7 +320,6 @@ export const PublicListingPage = () => {
             </motion.p>
           </motion.div>
 
-          {/* Action Buttons */}
           <motion.div
             className="flex gap-3"
             initial={{ opacity: 0, x: 30 }}
@@ -346,7 +340,7 @@ export const PublicListingPage = () => {
               whileHover={{ scale: 1.05, rotate: -2 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate("/dashboard/create-listing")}
-              className="group flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all"
+              className="group flex items-center gap-2 px-5 py-3 bg-linear-to-r from-primary to-accent text-white rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all"
             >
               <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
               <span className="hidden sm:inline">Create Listing</span>
@@ -354,7 +348,6 @@ export const PublicListingPage = () => {
           </motion.div>
         </div>
 
-        {/* Quick Stats */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -378,27 +371,25 @@ export const PublicListingPage = () => {
                   </p>
                 </div>
                 <div
-                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all`}
+                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-linear-to-br ${stat.color} flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all`}
                 >
                   <stat.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                 </div>
               </div>
               <motion.div
-                className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity -z-10"
+                className="absolute inset-0 bg-linear-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity -z-10"
                 initial={false}
               />
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Search & Filters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           className="bg-surface/80 backdrop-blur-xl border border-border/50 rounded-3xl shadow-2xl p-6 sm:p-8"
         >
-          {/* Search Bar */}
           <motion.div
             className="relative mb-6"
             animate={{
@@ -433,7 +424,6 @@ export const PublicListingPage = () => {
             </AnimatePresence>
           </motion.div>
 
-          {/* Filter Toggle (Mobile) */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -452,7 +442,6 @@ export const PublicListingPage = () => {
             </motion.div>
           </motion.button>
 
-          {/* Filters */}
           <motion.div
             initial={false}
             animate={{
@@ -510,7 +499,7 @@ export const PublicListingPage = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleGetLocation}
                 disabled={gettingLocation}
-                className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 whitespace-nowrap"
+                className="flex items-center justify-center gap-2 px-5 py-3 bg-linear-to-r from-green-500 to-emerald-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 whitespace-nowrap"
               >
                 {gettingLocation ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -524,7 +513,7 @@ export const PublicListingPage = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleClearLocation}
-                className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all whitespace-nowrap"
+                className="flex items-center justify-center gap-2 px-5 py-3 bg-linear-to-r from-primary to-accent text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all whitespace-nowrap"
               >
                 <MapPinned className="w-5 h-5" />
                 <span className="hidden sm:inline">Clear Location</span>
@@ -534,7 +523,6 @@ export const PublicListingPage = () => {
         </motion.div>
       </motion.div>
 
-      {/* Listings Grid */}
       <div className="max-w-7xl mx-auto">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
@@ -600,13 +588,11 @@ export const PublicListingPage = () => {
                   <motion.div
                     key={item._id}
                     variants={itemVariants}
-                    layout
                     exit={{ opacity: 0, scale: 0.8 }}
                     whileHover={{ y: -12, scale: 1.02 }}
                     className="group bg-surface/80 backdrop-blur-sm border border-border/50 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 relative"
                   >
-                    {/* Image */}
-                    <div className="relative h-52 bg-gradient-to-br from-primary/20 to-accent/20 overflow-hidden">
+                    <div className="relative h-52 bg-linear-to-br from-primary/20 to-accent/20 overflow-hidden">
                       {item.photoURL ? (
                         <motion.img
                           whileHover={{ scale: 1.1 }}
@@ -635,10 +621,8 @@ export const PublicListingPage = () => {
                         </div>
                       )}
 
-                      {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                      {/* Status Badge */}
                       <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -654,7 +638,6 @@ export const PublicListingPage = () => {
                         </span>
                       </motion.div>
 
-                      {/* Type Badge */}
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -667,7 +650,6 @@ export const PublicListingPage = () => {
                         </span>
                       </motion.div>
 
-                      {/* Expiry Warning */}
                       {item.type === "medicine" &&
                         isExpiringSoon(item.expiryDate) && (
                           <motion.div
@@ -693,7 +675,6 @@ export const PublicListingPage = () => {
                         )}
                     </div>
 
-                    {/* Content */}
                     <div className="p-6 space-y-4">
                       <motion.h3
                         className="font-bold text-text text-xl line-clamp-1 group-hover:text-primary transition-colors"
@@ -706,7 +687,6 @@ export const PublicListingPage = () => {
                         {item.description}
                       </p>
 
-                      {/* Meta Info */}
                       <div className="space-y-2 text-xs text-muted pt-2 border-t border-border/50">
                         <motion.div
                           className="flex items-center gap-2"
@@ -759,13 +739,12 @@ export const PublicListingPage = () => {
                         </motion.div>
                       </div>
 
-                      {/* Action Button */}
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleRequestClick(item)}
                         disabled={item.status !== "available"}
-                        className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                        className="w-full mt-4 px-6 py-3 bg-linear-to-r from-primary to-accent text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                       >
                         <Eye className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         {item.status === "available"
@@ -774,9 +753,8 @@ export const PublicListingPage = () => {
                       </motion.button>
                     </div>
 
-                    {/* Shine Effect */}
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"
+                      className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"
                       style={{
                         transform: "skewX(-20deg)",
                       }}
@@ -806,7 +784,6 @@ export const PublicListingPage = () => {
               onClick={(e) => e.stopPropagation()}
               className="bg-surface/95 backdrop-blur-xl border border-border rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
             >
-              {/* Modal Header */}
               <div className="sticky top-0 bg-surface/95 backdrop-blur-xl border-b border-border p-6 flex items-center justify-between z-10">
                 <div className="flex-1 pr-4">
                   <h2 className="text-2xl font-bold text-text mb-1">
@@ -820,20 +797,18 @@ export const PublicListingPage = () => {
                   whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setShowRequestModal(false)}
-                  className="p-2 hover:bg-background rounded-xl transition-colors flex-shrink-0"
+                  className="p-2 hover:bg-background rounded-xl transition-colors shrink-0"
                 >
                   <X className="w-6 h-6 text-muted" />
                 </motion.button>
               </div>
 
-              {/* Listing Preview */}
               <div className="px-6 pt-4 pb-2">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-background/50 border border-border/50 rounded-2xl p-4 flex gap-4"
                 >
-                  {/* Image */}
                   <div className="shrink-0">
                     {selectedListing.photoURL ? (
                       <img
@@ -842,7 +817,7 @@ export const PublicListingPage = () => {
                         className="w-20 h-20 object-cover rounded-xl border border-border"
                       />
                     ) : (
-                      <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center">
+                      <div className="w-20 h-20 bg-linear-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center">
                         <Package className="w-10 h-10 text-primary/50" />
                       </div>
                     )}

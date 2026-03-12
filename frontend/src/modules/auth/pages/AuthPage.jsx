@@ -70,7 +70,7 @@ const AuthPage = () => {
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="w-14 h-14 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]"
+                className="w-14 h-14 bg-linear-to-r from-primary to-accent rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]"
               >
                 <Heart className="w-7 h-7 text-white" fill="currentColor" />
               </motion.div>
@@ -97,7 +97,7 @@ const AuthPage = () => {
                   transition={{ delay: index * 0.2 + 0.6 }}
                   className="flex items-center gap-3"
                 >
-                  <div className={`w-10 h-10 bg-gradient-to-r ${feature.color} rounded-lg flex items-center justify-center shadow-lg`}>
+                  <div className={`w-10 h-10 bg-linear-to-r ${feature.color} rounded-lg flex items-center justify-center shadow-lg`}>
                     <feature.icon className="w-5 h-5 text-white" />
                   </div>
                   <span className="text-text font-medium">{feature.text}</span>
@@ -117,7 +117,7 @@ const AuthPage = () => {
               {/* Mobile Logo */}
               <div className="lg:hidden p-6 border-b border-border">
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(59,130,246,0.4)]">
+                  <div className="w-10 h-10 bg-linear-to-r from-primary to-accent rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(59,130,246,0.4)]">
                     <Heart className="w-5 h-5 text-white" fill="currentColor" />
                   </div>
                   <h1 className="text-2xl font-bold text-primary">MediLink</h1>
@@ -133,7 +133,7 @@ const AuthPage = () => {
                     whileTap={{ scale: 0.98 }}
                     className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
                       activeView === "login"
-                        ? "text-white bg-gradient-to-r from-primary to-accent border-b-2 border-primary"
+                        ? "text-white bg-linear-to-r from-primary to-accent border-b-2 border-primary"
                         : "text-muted hover:text-text hover:bg-surface"
                     }`}
                   >
@@ -145,7 +145,7 @@ const AuthPage = () => {
                     whileTap={{ scale: 0.98 }}
                     className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
                       activeView === "signup"
-                        ? "text-white bg-gradient-to-r from-primary to-accent border-b-2 border-primary"
+                        ? "text-white bg-linear-to-r from-primary to-accent border-b-2 border-primary"
                         : "text-muted hover:text-text hover:bg-surface"
                     }`}
                   >

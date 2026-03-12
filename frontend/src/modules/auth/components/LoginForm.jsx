@@ -147,13 +147,12 @@ const LoginForm = () => {
         </button>
       </div>
 
-      {/* Submit Button */}
       <motion.button
         type="submit"
         disabled={isSubmitting}
         whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
         whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-        className="w-full py-3 bg-gradient-to-r from-primary to-accent hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-soft"
+        className="w-full py-3 bg-linear-to-r from-primary to-accent hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-soft"
       >
         {isSubmitting ? (
           <>

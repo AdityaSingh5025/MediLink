@@ -4,7 +4,7 @@ import ForgotPasswordForm from "../components/ForgotPasswordForm";
 
 const ForgotPasswordPage = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-surface/30 to-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-surface/30 to-background p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

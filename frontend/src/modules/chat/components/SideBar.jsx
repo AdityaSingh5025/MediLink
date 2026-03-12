@@ -14,7 +14,6 @@ export default function Sidebar({
 }) {
   return (
     <>
-      {/* Mobile Sidebar - slides in/out */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.aside
@@ -24,7 +23,6 @@ export default function Sidebar({
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="md:hidden fixed top-0 left-0 h-full w-80 bg-surface/95 backdrop-blur-xl border-r border-border/50 z-40 flex flex-col shadow-2xl"
           >
-            {/* Header */}
             <div className="p-5 border-b border-border/50 bg-surface/50 backdrop-blur-xl sticky top-0 z-10">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-text">Messages</h2>
@@ -105,7 +103,7 @@ export default function Sidebar({
                             }}
                             className={`cursor-pointer p-3 rounded-xl transition-all ${
                               listingId === chat.listingId
-                                ? "bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30"
+                                ? "bg-linear-to-r from-primary/20 to-accent/20 border border-primary/30"
                                 : "hover:bg-surface/50"
                             }`}
                           >
@@ -149,7 +147,6 @@ export default function Sidebar({
 
       {/* Desktop Sidebar - always visible */}
       <aside className="hidden md:flex md:w-[320px] lg:w-[360px] bg-surface/80 backdrop-blur-xl border-r border-border/50 flex-col shadow-lg">
-        {/* Header */}
         <div className="p-5 border-b border-border/50 bg-surface/50 backdrop-blur-xl sticky top-0 z-10">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-text">Messages</h2>
@@ -219,7 +216,7 @@ export default function Sidebar({
                         }}
                         className={`cursor-pointer p-3 rounded-xl transition-all ${
                           listingId === chat.listingId
-                            ? "bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30"
+                            ? "bg-linear-to-r from-primary/20 to-accent/20 border border-primary/30"
                             : "hover:bg-surface/50"
                         }`}
                       >

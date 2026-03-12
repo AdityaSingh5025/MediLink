@@ -18,7 +18,7 @@ export const Badge = ({ variant = "default", className = "", children, ...props 
       break;
     default:
       variantClasses =
-        "bg-gradient-to-r from-blue-600 to-blue-700 text-white border border-transparent hover:from-blue-700 hover:to-blue-800";
+        "bg-linear-to-r from-blue-600 to-blue-700 text-white border border-transparent hover:from-blue-700 hover:to-blue-800";
       break;
   }
 

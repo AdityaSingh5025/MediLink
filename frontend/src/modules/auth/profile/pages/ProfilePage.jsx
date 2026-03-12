@@ -146,7 +146,7 @@ export default function ProfilePage() {
                 {activeTab === tab.id && (
                   <motion.div
                     layoutId="activeTab"
-                    className={`absolute inset-0 bg-gradient-to-r ${tab.color} rounded-xl`}
+                    className={`absolute inset-0 bg-linear-to-r ${tab.color} rounded-xl`}
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
@@ -172,7 +172,7 @@ export default function ProfilePage() {
             {activeTab === "profile" && (
               <div className="p-4 sm:p-6 lg:p-8">
                 <div className="flex items-center gap-3 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-border">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
                     <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
@@ -195,7 +195,7 @@ export default function ProfilePage() {
             {activeTab === "password" && (
               <div className="p-4 sm:p-6 lg:p-8">
                 <div className="flex items-center gap-3 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-border">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
@@ -214,7 +214,7 @@ export default function ProfilePage() {
             {activeTab === "danger" && (
               <div className="p-4 sm:p-6 lg:p-8">
                 <div className="flex items-center gap-3 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-border">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-red-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-r from-red-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Trash2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>

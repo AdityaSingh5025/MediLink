@@ -323,7 +323,7 @@ export const MyListingsPage = () => {
                   className="bg-surface/80 backdrop-blur-sm border border-border rounded-2xl overflow-hidden shadow-soft hover:shadow-xl transition-all duration-300 relative group"
                 >
                   {/* Image */}
-                  <div className="relative h-48 bg-gradient-to-br from-primary/10 to-accent/10 overflow-hidden">
+                  <div className="relative h-48 bg-linear-to-br from-primary/10 to-accent/10 overflow-hidden">
                     {listing.photoURL ? (
                       <img
                         src={listing.photoURL}
@@ -627,7 +627,6 @@ export const MyListingsPage = () => {
                   />
                 </div>
 
-                {/* Buttons */}
                 <div className="flex gap-3 pt-4 border-t border-border">
                   <button
                     type="button"
@@ -648,7 +647,7 @@ export const MyListingsPage = () => {
                   <button
                     onClick={handleUpdateListing}
                     disabled={isWorking || isUploading}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 px-6 py-3 bg-linear-to-r from-primary to-accent text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isWorking ? (
                       <>

@@ -13,7 +13,6 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Detect mobile device
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -40,23 +39,21 @@ const Navbar = () => {
   return (
     <nav className={`w-full ${
       isMobile 
-        ? 'bg-surface border-b border-border' // Simple background on mobile
-        : 'bg-surface/95 backdrop-blur-md border-b border-border' // Blur only on desktop
+        ? 'bg-surface border-b border-border'
+        : 'bg-surface/95 backdrop-blur-md border-b border-border'
     } fixed top-0 z-50 shadow-sm`}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
-          {/* Logo - Simplified animation */}
           <div
             onClick={() => navigate("/")}
             className="flex items-center gap-2 cursor-pointer"
           >
-            <div className="w-9 h-9 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center shadow-md">
+            <div className="w-9 h-9 bg-linear-to-r from-primary to-accent rounded-lg flex items-center justify-center shadow-md">
               <Heart className="w-5 h-5 text-white" fill="currentColor" />
             </div>
             <h1 className="text-xl font-bold text-primary">MediLink</h1>
           </div>
 
-          {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
               if (link.protected && !isAuthenticated) return null;
@@ -78,14 +75,13 @@ const Navbar = () => {
             })}
           </div>
 
-          {/* Right Side - Desktop */}
           <div className="hidden md:flex items-center gap-4">
             {!isAuthenticated ? (
               <motion.button
                 whileHover={!isMobile ? { scale: 1.05 } : {}}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate("/auth")}
-                className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-white px-6 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-shadow duration-300"
+                className="flex items-center gap-2 bg-linear-to-r from-primary to-accent text-white px-6 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-shadow duration-300"
               >
                 <LogIn size={18} />
                 Login
@@ -96,7 +92,7 @@ const Navbar = () => {
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface border border-border hover:border-primary transition-colors duration-200"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center">
                     <User size={18} className="text-white" />
                   </div>
                   <span className="text-sm font-medium text-text">
@@ -116,7 +112,7 @@ const Navbar = () => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.15 }} // Faster animation
+                      transition={{ duration: 0.15 }}
                       className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-lg shadow-xl overflow-hidden"
                     >
                       <button
@@ -143,7 +139,6 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden text-text hover:text-primary transition-colors p-2"
@@ -153,7 +148,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu - Simplified animation */}
       {isMobile && (
         <div
           className={`md:hidden bg-surface border-t border-border transition-all duration-200 ease-out ${
@@ -210,7 +204,7 @@ const Navbar = () => {
                   navigate("/auth");
                   setIsMenuOpen(false);
                 }}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-accent text-white px-6 py-3 rounded-lg font-medium shadow-md"
+                className="w-full flex items-center justify-center gap-2 bg-linear-to-r from-primary to-accent text-white px-6 py-3 rounded-lg font-medium shadow-md"
               >
                 <LogIn size={18} />
                 Login

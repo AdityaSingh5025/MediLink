@@ -36,7 +36,6 @@ export const LeaderboardPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredRank, setHoveredRank] = useState(null);
 
-  // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       dispatch(setLeaderboardLoading(true));
@@ -62,7 +61,6 @@ export const LeaderboardPage = () => {
     fetchData();
   }, [dispatch]);
 
-  // Calculate stats
   const globalStats = useMemo(() => {
     if (!leaderboardData || leaderboardData.length === 0) return null;
 
@@ -78,7 +76,7 @@ export const LeaderboardPage = () => {
     };
   }, [leaderboardData]);
 
-  // Get rank medal
+
   const getRankMedal = (rank) => {
     switch (rank) {
       case 1:
@@ -104,7 +102,7 @@ export const LeaderboardPage = () => {
     }
   };
 
-  // Get rank colors
+
   const getRankColors = (rank) => {
     if (rank === 1)
       return {
@@ -142,7 +140,7 @@ export const LeaderboardPage = () => {
     };
   };
 
-  // Filter data
+
   const filteredData = useMemo(() => {
     let data = leaderboardData || [];
     if (searchQuery) {
@@ -153,13 +151,13 @@ export const LeaderboardPage = () => {
     return data;
   }, [leaderboardData, searchQuery]);
 
-  // Particles component
+
   const Particles = () => (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
+      {[...Array(10)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute w-1 h-1 bg-primary/30 rounded-full"
+          className="absolute w-1 h-1 bg-primary/20 rounded-full"
           initial={{
             x: Math.random() * window.innerWidth,
             y: Math.random() * window.innerHeight,
@@ -180,13 +178,13 @@ export const LeaderboardPage = () => {
     </div>
   );
 
-  // Loading state
+
   if (
     leaderboardLoading &&
     (!leaderboardData || leaderboardData.length === 0)
   ) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-surface/10 to-background relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-surface/10 to-background relative overflow-hidden">
         <Particles />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -217,10 +215,10 @@ export const LeaderboardPage = () => {
     );
   }
 
-  // Error state
+
   if (error && (!leaderboardData || leaderboardData.length === 0)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-surface/10 to-background">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-surface/10 to-background">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -241,7 +239,7 @@ export const LeaderboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-surface/10 to-background py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-background via-surface/10 to-background py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Animated Background Blobs */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <motion.div
@@ -255,21 +253,21 @@ export const LeaderboardPage = () => {
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute -top-40 -right-40 w-[800px] h-[800px] bg-gradient-to-br from-primary/30 to-accent/30 rounded-full blur-3xl"
+          className="absolute -top-40 -right-40 w-[800px] h-[800px] bg-linear-to-br from-primary/20 to-accent/20 rounded-full blur-2xl"
         />
         <motion.div
           animate={{
-            scale: [1.2, 1, 1.2],
-            rotate: [90, 0, 90],
-            opacity: [0.2, 0.3, 0.2],
+            scale: [1.1, 1, 1.1],
+            rotate: [45, 0, 45],
+            opacity: [0.15, 0.2, 0.15],
           }}
           transition={{
-            duration: 20,
+            duration: 30,
             repeat: Infinity,
             ease: "easeInOut",
             delay: 2,
           }}
-          className="absolute -bottom-40 -left-40 w-[700px] h-[700px] bg-gradient-to-tr from-accent/30 to-primary/30 rounded-full blur-3xl"
+          className="absolute -bottom-40 -left-40 w-[700px] h-[700px] bg-linear-to-tr from-accent/20 to-primary/20 rounded-full blur-2xl"
         />
         <motion.div
           animate={{
@@ -281,7 +279,7 @@ export const LeaderboardPage = () => {
             repeat: Infinity,
             delay: 5,
           }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-linear-to-br from-primary/10 to-accent/10 rounded-full blur-2xl"
         />
       </div>
 
@@ -310,9 +308,9 @@ export const LeaderboardPage = () => {
                 scale: { duration: 2, repeat: Infinity },
                 rotate: { duration: 20, repeat: Infinity, ease: "linear" },
               }}
-              className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full blur-2xl opacity-50"
+              className="absolute inset-0 bg-linear-to-r from-yellow-400 to-amber-500 rounded-full blur-2xl opacity-50"
             />
-            <div className="relative w-28 h-28 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl">
+            <div className="relative w-28 h-28 bg-linear-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl">
               <Trophy className="w-14 h-14 text-white" />
             </div>
             <motion.div
@@ -338,7 +336,7 @@ export const LeaderboardPage = () => {
                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
               }}
               transition={{ duration: 5, repeat: Infinity }}
-              className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto]"
+              className="bg-linear-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto]"
             >
               Hall of Heroes
             </motion.span>
@@ -402,18 +400,18 @@ export const LeaderboardPage = () => {
                     ],
                   }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="relative bg-surface/80 backdrop-blur-xl border border-border/50 rounded-3xl p-8 overflow-hidden"
+                  className="relative bg-surface/90 backdrop-blur-md border border-border/50 rounded-3xl p-8 overflow-hidden"
                 >
                   {/* Gradient overlay */}
                   <div
-                    className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-5 group-hover:opacity-10 transition-opacity`}
+                    className={`absolute inset-0 bg-linear-to-br ${stat.gradient} opacity-5 group-hover:opacity-10 transition-opacity`}
                   />
 
                   <div className="relative z-10">
                     <motion.div
                       whileHover={{ rotate: 360, scale: 1.2 }}
                       transition={{ duration: 0.6 }}
-                      className={`w-16 h-16 bg-gradient-to-br ${stat.gradient} rounded-2xl flex items-center justify-center mb-4 shadow-xl`}
+                      className={`w-16 h-16 bg-linear-to-br ${stat.gradient} rounded-2xl flex items-center justify-center mb-4 shadow-xl`}
                     >
                       <stat.icon className="w-8 h-8 text-white" />
                     </motion.div>
@@ -426,7 +424,7 @@ export const LeaderboardPage = () => {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: stat.delay + 0.3, type: "spring" }}
-                      className="text-4xl font-black bg-gradient-to-r from-text to-text/70 bg-clip-text text-transparent"
+                      className="text-4xl font-black bg-linear-to-r from-text to-text/70 bg-clip-text text-transparent"
                     >
                       {stat.value}
                     </motion.p>
@@ -442,7 +440,7 @@ export const LeaderboardPage = () => {
                       repeat: Infinity,
                       repeatDelay: 2,
                     }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
+                    className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent skew-x-12"
                   />
                 </motion.div>
               </motion.div>
@@ -470,10 +468,10 @@ export const LeaderboardPage = () => {
                     repeat: Infinity,
                     ease: "linear",
                   }}
-                  className="absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"
+                  className="absolute -inset-1 bg-linear-to-r from-primary via-accent to-primary rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"
                 />
 
-                <div className="relative bg-surface/95 backdrop-blur-2xl rounded-3xl p-8 border border-border/50 overflow-hidden">
+                <div className="relative bg-surface/95 backdrop-blur-md rounded-3xl p-8 border border-border/50 overflow-hidden">
                   <div className="flex flex-col sm:flex-row items-center gap-8">
                     {/* Avatar */}
                     <motion.div
@@ -494,7 +492,7 @@ export const LeaderboardPage = () => {
                             ease: "linear",
                           },
                         }}
-                        className="absolute -inset-4 bg-gradient-to-r from-primary to-accent rounded-full blur-2xl opacity-50"
+                        className="absolute -inset-4 bg-linear-to-r from-primary to-accent rounded-full blur-2xl opacity-50"
                       />
 
                       <div className="relative w-28 h-28 rounded-full border-4 border-primary/30 overflow-hidden shadow-2xl">
@@ -512,7 +510,7 @@ export const LeaderboardPage = () => {
                           scale: [1, 1.2, 1],
                         }}
                         transition={{ duration: 1.5, repeat: Infinity }}
-                        className="absolute -top-2 -right-2 w-10 h-10 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center shadow-xl"
+                        className="absolute -top-2 -right-2 w-10 h-10 bg-linear-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center shadow-xl"
                       >
                         <Crown className="w-5 h-5 text-white" />
                       </motion.div>
@@ -535,7 +533,7 @@ export const LeaderboardPage = () => {
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: 0.9, type: "spring" }}
                           whileHover={{ scale: 1.1 }}
-                          className="flex items-center gap-3 bg-gradient-to-r from-primary/20 to-accent/20 px-6 py-3 rounded-2xl border border-primary/30"
+                          className="flex items-center gap-3 bg-linear-to-r from-primary/10 to-accent/10 px-6 py-3 rounded-2xl border border-primary/20"
                         >
                           <Target className="w-6 h-6 text-primary" />
                           <div>
@@ -553,7 +551,7 @@ export const LeaderboardPage = () => {
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: 1, type: "spring" }}
                           whileHover={{ scale: 1.1 }}
-                          className="flex items-center gap-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 px-6 py-3 rounded-2xl border border-pink-500/30"
+                          className="flex items-center gap-3 bg-linear-to-r from-pink-500/20 to-purple-500/20 px-6 py-3 rounded-2xl border border-pink-500/30"
                         >
                           <Heart className="w-6 h-6 text-pink-500" />
                           <div>
@@ -588,7 +586,7 @@ export const LeaderboardPage = () => {
                 placeholder="Search heroes by name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-16 pr-6 py-5 bg-surface/80 backdrop-blur-xl border-2 border-border/50 rounded-3xl text-text text-lg placeholder-muted focus:border-primary focus:ring-4 focus:ring-primary/20 focus:outline-none transition-all shadow-xl"
+                className="w-full pl-16 pr-6 py-5 bg-surface/90 backdrop-blur-md border-2 border-border/50 rounded-3xl text-text text-lg placeholder-muted focus:border-primary focus:ring-4 focus:ring-primary/20 focus:outline-none transition-all shadow-xl"
               />
             </motion.div>
           </div>
@@ -644,9 +642,9 @@ export const LeaderboardPage = () => {
                       ],
                     }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className={`relative bg-gradient-to-br ${colors.gradient} p-[3px] rounded-3xl`}
+                    className={`relative bg-linear-to-br ${colors.gradient} p-[3px] rounded-3xl`}
                   >
-                    <div className="relative bg-surface/95 backdrop-blur-2xl rounded-3xl p-8 overflow-hidden">
+                    <div className="relative bg-surface/95 backdrop-blur-md rounded-3xl p-8 overflow-hidden">
                       <div className="text-center relative z-10">
                         {/* Rank Badge */}
                         <motion.div
@@ -683,7 +681,7 @@ export const LeaderboardPage = () => {
                                 rotate: rank === 1 ? [0, 10, -10, 0] : 0,
                               }}
                               transition={{ duration: 2, repeat: Infinity }}
-                              className={`absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br ${colors.gradient} rounded-full flex items-center justify-center shadow-2xl ${medal.glow} shadow-lg`}
+                              className={`absolute -top-3 -right-3 w-12 h-12 bg-linear-to-br ${colors.gradient} rounded-full flex items-center justify-center shadow-2xl ${medal.glow} shadow-lg`}
                             >
                               <medal.icon className="w-7 h-7 text-white" />
                             </motion.div>
@@ -772,10 +770,10 @@ export const LeaderboardPage = () => {
           transition={{ delay: 1.2 }}
           className="relative group"
         >
-          <div className="absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
+          <div className="absolute -inset-1 bg-linear-to-r from-primary via-accent to-primary rounded-3xl blur-xl opacity-10 group-hover:opacity-20 transition-opacity" />
 
-          <div className="relative bg-surface/90 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-2xl overflow-hidden">
-            <div className="p-8 border-b border-border/50 bg-gradient-to-r from-primary/5 to-accent/5">
+          <div className="relative bg-surface/90 backdrop-blur-md border border-border/50 rounded-3xl shadow-2xl overflow-hidden">
+            <div className="p-8 border-b border-border/50 bg-linear-to-r from-primary/5 to-accent/5">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-3xl font-black text-text flex items-center gap-3">
@@ -823,7 +821,6 @@ export const LeaderboardPage = () => {
                       return (
                         <motion.tr
                           key={user.userId || index}
-                          layout
                           initial={{ opacity: 0, x: -30 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 30 }}
@@ -833,7 +830,7 @@ export const LeaderboardPage = () => {
                             stiffness: 300,
                           }}
                           whileHover={{
-                            scale: 1.02,
+                            scale: 1.01,
                             backgroundColor: "rgba(var(--primary-rgb), 0.05)",
                           }}
                           onHoverStart={() => setHoveredRank(user.rank)}
@@ -854,7 +851,7 @@ export const LeaderboardPage = () => {
                                       user.rank === 1 ? [0, 10, -10, 0] : 0,
                                   }}
                                   transition={{ duration: 2, repeat: Infinity }}
-                                  className={`w-12 h-12 rounded-full bg-gradient-to-br ${colors.gradient} flex items-center justify-center shadow-lg`}
+                                  className={`w-12 h-12 rounded-full bg-linear-to-br ${colors.gradient} flex items-center justify-center shadow-lg`}
                                 >
                                   <medal.icon className="w-6 h-6 text-white" />
                                 </motion.div>
@@ -897,7 +894,7 @@ export const LeaderboardPage = () => {
                             <div className="flex justify-center">
                               <motion.div
                                 whileHover={{ scale: 1.1 }}
-                                className={`px-5 py-2 bg-gradient-to-r ${colors.gradient} rounded-full shadow-lg`}
+                                className={`px-5 py-2 bg-linear-to-r ${colors.gradient} rounded-full shadow-lg`}
                               >
                                 <p className="text-lg font-black text-white flex items-center gap-2">
                                   <Gift className="w-4 h-4" />
@@ -947,7 +944,7 @@ export const LeaderboardPage = () => {
           whileTap={{ scale: 0.9 }}
           transition={{ duration: 0.3 }}
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-r from-primary to-accent text-white rounded-full shadow-2xl flex items-center justify-center z-50"
+          className="fixed bottom-8 right-8 w-16 h-16 bg-linear-to-r from-primary to-accent text-white rounded-full shadow-2xl flex items-center justify-center z-50"
         >
           <ChevronUp className="w-7 h-7" />
         </motion.button>

@@ -157,7 +157,7 @@ const VerifyEmailForm = ({ email, onVerifySuccess, onBack }) => {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", duration: 0.5 }}
-          className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto"
+          className="w-16 h-16 bg-linear-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto"
         >
           <Mail className="w-8 h-8 text-white" />
         </motion.div>
@@ -218,13 +218,12 @@ const VerifyEmailForm = ({ email, onVerifySuccess, onBack }) => {
         ))}
       </div>
 
-      {/* Verify Button */}
       <motion.button
         onClick={() => handleVerify()}
         disabled={isVerifying || otp.join("").length !== 6}
         whileHover={{ scale: isVerifying ? 1 : 1.02 }}
         whileTap={{ scale: isVerifying ? 1 : 0.98 }}
-        className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+        className="w-full py-3 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
       >
         {isVerifying ? (
           <>

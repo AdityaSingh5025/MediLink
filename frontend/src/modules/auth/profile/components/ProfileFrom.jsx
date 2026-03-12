@@ -265,7 +265,7 @@ export default function ProfileForm({ userInfo, profileData, refreshProfile }) {
             <motion.label
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="absolute bottom-0 right-0 bg-gradient-to-r from-primary to-accent text-white p-2 sm:p-3 rounded-full cursor-pointer shadow-lg"
+              className="absolute bottom-0 right-0 bg-linear-to-r from-primary to-accent text-white p-2 sm:p-3 rounded-full cursor-pointer shadow-lg"
             >
               {isUploading ? (
                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
@@ -427,7 +427,7 @@ export default function ProfileForm({ userInfo, profileData, refreshProfile }) {
                   postalCode: "",
                 })
               }
-              className="px-3 py-2 sm:px-4 sm:py-2 bg-gradient-to-r from-primary to-accent text-white rounded-lg flex items-center gap-2 text-xs sm:text-sm w-full sm:w-auto justify-center"
+              className="px-3 py-2 sm:px-4 sm:py-2 bg-linear-to-r from-primary to-accent text-white rounded-lg flex items-center gap-2 text-xs sm:text-sm w-full sm:w-auto justify-center"
             >
               <Plus className="w-4 h-4" />
               Add Address
@@ -519,7 +519,7 @@ export default function ProfileForm({ userInfo, profileData, refreshProfile }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsEditing(true)}
-            className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl flex items-center justify-center gap-2 font-medium shadow-lg text-sm sm:text-base"
+            className="w-full sm:w-auto px-6 py-3 bg-linear-to-r from-primary to-accent text-white rounded-xl flex items-center justify-center gap-2 font-medium shadow-lg text-sm sm:text-base"
           >
             <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
             Edit Profile
@@ -543,7 +543,7 @@ export default function ProfileForm({ userInfo, profileData, refreshProfile }) {
               whileTap={{ scale: 0.95 }}
               onClick={handleSubmit(onSubmit)}
               disabled={isSaving || isUploading}
-              className="w-full sm:w-auto order-1 sm:order-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl flex items-center justify-center gap-2 font-medium shadow-lg disabled:opacity-50 text-sm sm:text-base"
+              className="w-full sm:w-auto order-1 sm:order-2 px-6 py-3 bg-linear-to-r from-primary to-accent text-white rounded-xl flex items-center justify-center gap-2 font-medium shadow-lg disabled:opacity-50 text-sm sm:text-base"
             >
               {isSaving ? (
                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />

@@ -9,7 +9,6 @@ import { sendVerificationEmail } from "../../helper/verificationMail.js";
 
 dotenv.config();
 
-// signup controller
 export const signup = async (req, res) => {
   try {
     const { email, password, name, accountType } = req.body;
@@ -29,7 +28,6 @@ export const signup = async (req, res) => {
         });
     }
 
-    // check user already exist or he already signed up but did not verify email
     let existingUser = await User.findOne({ email });
     if (existingUser) {
       if (!existingUser.isVerified) {
@@ -53,7 +51,6 @@ export const signup = async (req, res) => {
           await existingUser.save();
 
           await sendVerificationEmail(email, otp);
-          // console.log("email sent",otp);
 
         } catch (emailError) {
           console.error("Email sending failed:", emailError);
@@ -115,7 +112,6 @@ export const signup = async (req, res) => {
   }
 };
 
-// verify otp
 export const verifyEmail = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -203,7 +199,6 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
-// resend otp
 export const resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -222,7 +217,6 @@ export const resendOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email already verified. Please login." });
     }
 
-    // Rate limiting: Check if OTP was sent recently (e.g., last 60 seconds)
     if (user.lastOtpSentAt && Date.now() - user.lastOtpSentAt.getTime() < 60 * 1000) {
       const waitSeconds = Math.ceil((60 * 1000 - (Date.now() - user.lastOtpSentAt.getTime())) / 1000);
       return res.status(429).json({
@@ -253,7 +247,6 @@ export const resendOtp = async (req, res) => {
   }
 };
 
-// login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -335,7 +328,6 @@ export const login = async (req, res) => {
   }
 };
 
-// Refresh
 export const refreshToken = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
@@ -379,7 +371,6 @@ export const refreshToken = async (req, res) => {
   }
 };
 
-// logout
 export const logout = (req, res) => {
   try {
     res.clearCookie("refreshToken", {

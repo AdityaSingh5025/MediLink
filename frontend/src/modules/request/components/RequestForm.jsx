@@ -246,13 +246,12 @@ export const RequestForm = ({ listingId, listingType, onSuccess }) => {
         </motion.div>
       )}
 
-      {/* Submit Button */}
       <motion.button
         type="submit"
         disabled={uploading}
         whileHover={{ scale: uploading ? 1 : 1.02 }}
         whileTap={{ scale: uploading ? 1 : 0.98 }}
-        className="w-full px-6 py-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full px-6 py-4 bg-linear-to-r from-primary to-accent text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {uploading ? (
           <>

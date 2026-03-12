@@ -72,7 +72,7 @@ const Footer = () => {
   return (
     <footer className="w-full bg-surface border-t border-border relative overflow-hidden">
       {/* Decorative gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-6 py-12">
         <motion.div
@@ -97,11 +97,11 @@ const Footer = () => {
                   ],
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center"
+                className="w-10 h-10 bg-linear-to-r from-primary to-accent rounded-xl flex items-center justify-center"
               >
                 <Heart className="w-5 h-5 text-white" fill="currentColor" />
               </motion.div>
-              <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <h2 className="text-xl font-bold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
                 MediLink
               </h2>
             </div>
@@ -183,7 +183,7 @@ const Footer = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-6 py-2 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
+                className="px-6 py-2 bg-linear-to-r from-primary to-accent text-white rounded-lg font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
               >
                 <Send size={18} />
                 Subscribe

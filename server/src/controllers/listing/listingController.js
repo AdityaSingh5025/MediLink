@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import Listings from "../../models/Listing.js";
 
-// Create a New Listing
 export const createListing = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
@@ -59,7 +58,6 @@ export const createListing = async (req, res) => {
       location: { city, lat, lng },
     };
 
-    // If medicine type, verify expiry date
     if (type === "medicine") {
       if (!expiryDate) {
         return res.status(400).json({
@@ -107,7 +105,6 @@ export const createListing = async (req, res) => {
   }
 };
 
-// Get All Listings
 export const getAllListings = async (req, res) => {
   try {
     const { type, city, status, page = 1, limit = 20 } = req.query;
@@ -142,7 +139,6 @@ export const getAllListings = async (req, res) => {
       query.status = status;
     }
 
-    // For medicines, only show non-expired listings
     if (type === "medicine") {
       query.expiryDate = { $gt: new Date() };
     }
@@ -190,7 +186,6 @@ export const getAllListings = async (req, res) => {
   }
 };
 
-// Get a Listing by ID
 export const getListing = async (req, res) => {
   try {
     const listingId = req.params.id;
@@ -227,7 +222,6 @@ export const getListing = async (req, res) => {
   }
 };
 
-// Update Listing Status
 export const updateListingStatus = async (req, res) => {
   try {
     const listingId = req.params.id;
@@ -259,7 +253,6 @@ export const updateListingStatus = async (req, res) => {
       });
     }
 
-    // Only the owner can update
     if (listing.ownerId.toString() !== userId.toString()) {
       return res.status(403).json({
         success: false,
@@ -287,7 +280,6 @@ export const updateListingStatus = async (req, res) => {
   }
 };
 
-// Update a Listing
 export const updateListing = async (req, res) => {
   try {
     const { title, description, expiryDate, location, photoURL } = req.body;
@@ -309,7 +301,6 @@ export const updateListing = async (req, res) => {
       });
     }
 
-    // Only owner can update
     if (listing.ownerId.toString() !== req.user.id.toString()) {
       return res.status(403).json({
         success: false,
@@ -349,7 +340,6 @@ export const updateListing = async (req, res) => {
       updated = true;
     }
 
-    // For medicine, validate new expiry date
     if (listing.type === "medicine" && expiryDate) {
       const parsed = new Date(expiryDate);
 
@@ -394,7 +384,6 @@ export const updateListing = async (req, res) => {
   }
 };
 
-// Delete a Listing
 export const deleteListing = async (req, res) => {
   try {
     const listingId = req.params.id;
@@ -436,7 +425,6 @@ export const deleteListing = async (req, res) => {
   }
 };
 
-// Get All Listings Created by Logged-In User
 export const getMyListings = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {

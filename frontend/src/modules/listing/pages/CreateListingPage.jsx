@@ -186,7 +186,6 @@ export const CreateListingPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-4xl mx-auto"
       >
-        {/* Header */}
         <div className="mb-8">
           <motion.button
             whileHover={{ scale: 1.05, x: -5 }}
@@ -206,7 +205,6 @@ export const CreateListingPage = () => {
           </p>
         </div>
 
-        {/* Form */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -217,7 +215,6 @@ export const CreateListingPage = () => {
             onSubmit={handleSubmit(onSubmit)}
             className="p-6 sm:p-8 space-y-6"
           >
-            {/* Type Selection */}
             <div className="space-y-3">
               <label className="text-sm font-medium text-text">
                 Listing Type *
@@ -285,7 +282,6 @@ export const CreateListingPage = () => {
               </div>
             </div>
 
-            {/* Title */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-text flex items-center gap-2">
                 <Package className="w-4 h-4" />
@@ -312,7 +308,6 @@ export const CreateListingPage = () => {
               )}
             </div>
 
-            {/* Description */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-text flex items-center gap-2">
                 <FileText className="w-4 h-4" />
@@ -340,7 +335,6 @@ export const CreateListingPage = () => {
               )}
             </div>
 
-            {/* Expiry Date (Medicine only) */}
             <AnimatePresence>
               {selectedType === "medicine" && (
                 <motion.div
@@ -378,7 +372,6 @@ export const CreateListingPage = () => {
               )}
             </AnimatePresence>
 
-            {/* Location */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-text flex items-center gap-2">
@@ -436,7 +429,6 @@ export const CreateListingPage = () => {
               )}
             </div>
 
-            {/* Image Upload */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-text flex items-center gap-2">
                 <ImageIcon className="w-4 h-4" />
@@ -504,7 +496,6 @@ export const CreateListingPage = () => {
               </AnimatePresence>
             </div>
 
-            {/* Submit Button */}
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6 border-t border-border">
               <motion.button
                 type="button"
@@ -521,7 +512,7 @@ export const CreateListingPage = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 disabled={isSubmitting || isUploading}
-                className="w-full sm:flex-1 px-6 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl font-medium shadow-lg disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                className="w-full sm:flex-1 px-6 py-3 bg-linear-to-r from-primary to-accent text-white rounded-xl font-medium shadow-lg disabled:opacity-50 transition-all flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>

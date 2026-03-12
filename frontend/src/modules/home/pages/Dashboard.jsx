@@ -91,8 +91,7 @@ export const DashboardPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-surface/20 to-background">
-      {/* Animated Background Blobs */}
+    <div className="min-h-screen bg-linear-to-br from-background via-surface/20 to-background">
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <motion.div
           animate={{
@@ -105,31 +104,29 @@ export const DashboardPage = () => {
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-primary/30 to-accent/30 rounded-full blur-3xl"
+          className="absolute -top-40 -right-40 w-96 h-96 bg-linear-to-br from-primary/20 to-accent/20 rounded-full blur-2xl"
         />
         <motion.div
           animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.15, 0.25, 0.15],
+            scale: [1, 1.2, 1],
+            opacity: [0.15, 0.2, 0.15],
             rotate: [0, -90, 0],
           }}
           transition={{
-            duration: 25,
+            duration: 30,
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-accent/30 to-primary/30 rounded-full blur-3xl"
+          className="absolute -bottom-40 -left-40 w-96 h-96 bg-linear-to-br from-accent/20 to-primary/20 rounded-full blur-2xl"
         />
       </div>
 
-      {/* Header - NOT FIXED */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-surface/50 backdrop-blur-xl border-b border-border/50 shadow-lg"
+        className="bg-surface/50 backdrop-blur-md border-b border-border/50 shadow-lg"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Greeting Section */}
           <div className="flex items-center justify-between mb-6">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -137,7 +134,7 @@ export const DashboardPage = () => {
               transition={{ delay: 0.1 }}
             >
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
-                <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                   {getGreeting()}, {userInfo?.name?.split(" ")[0] || "User"}!
                 </span>
               </h1>
@@ -158,7 +155,6 @@ export const DashboardPage = () => {
             </button>
           </div>
 
-          {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat, index) => (
               <motion.div
@@ -166,8 +162,8 @@ export const DashboardPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + index * 0.1 }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="relative overflow-hidden bg-gradient-to-br from-surface/80 to-background/80 backdrop-blur-sm border border-border/50 rounded-2xl p-4 sm:p-6 shadow-soft hover:shadow-xl transition-all duration-300 group"
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="relative overflow-hidden bg-linear-to-br from-surface/80 to-background/80 backdrop-blur-sm border border-border/50 rounded-2xl p-4 sm:p-6 shadow-soft transition-all duration-300 group"
               >
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex-1">
@@ -179,17 +175,16 @@ export const DashboardPage = () => {
                     </p>
                   </div>
                   <div
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-linear-to-br ${stat.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}
                   >
                     <stat.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   </div>
                 </div>
 
-                {/* Animated Background on Hover */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   whileHover={{ opacity: 1 }}
-                  className={`absolute inset-0 ${stat.bgColor} -z-10 blur-xl`}
+                  className={`absolute inset-0 ${stat.bgColor} -z-10`}
                 />
               </motion.div>
             ))}
@@ -197,7 +192,6 @@ export const DashboardPage = () => {
         </div>
       </motion.div>
 
-      {/* Desktop Navigation */}
       <div className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-3 gap-4">
           {navLinks.map((link) => {
@@ -209,7 +203,7 @@ export const DashboardPage = () => {
                   whileTap={{ scale: 0.98 }}
                   className={`relative overflow-hidden rounded-2xl p-6 transition-all duration-300 ${
                     isActive
-                      ? "bg-gradient-to-br from-primary to-accent text-white shadow-2xl"
+                      ? "bg-linear-to-br from-primary to-accent text-white shadow-2xl"
                       : "bg-surface/50 backdrop-blur-sm border border-border/50 hover:border-primary/50"
                   }`}
                 >
@@ -246,7 +240,7 @@ export const DashboardPage = () => {
                   {isActive && (
                     <motion.div
                       layoutId="activeIndicator"
-                      className="absolute inset-0 bg-gradient-to-br from-primary to-accent -z-10"
+                      className="absolute inset-0 bg-linear-to-br from-primary to-accent -z-10"
                       transition={{
                         type: "spring",
                         bounce: 0.2,
@@ -285,7 +279,7 @@ export const DashboardPage = () => {
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-4 p-4 rounded-xl transition-all ${
                         isActive
-                          ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg"
+                          ? "bg-linear-to-r from-primary to-accent text-white shadow-lg"
                           : "bg-background/50 hover:bg-background"
                       }`}
                     >
@@ -325,7 +319,6 @@ export const DashboardPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AnimatePresence mode="wait">
           <motion.div

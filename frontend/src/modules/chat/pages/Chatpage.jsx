@@ -43,7 +43,7 @@ const MessageBubble = memo(({ message, isMine }) => {
       <div
         className={`max-w-[75%] px-4 py-3 ${
           isMine
-            ? "bg-gradient-to-r from-primary to-accent text-white rounded-2xl rounded-tr-sm"
+            ? "bg-linear-to-r from-primary to-accent text-white rounded-2xl rounded-tr-sm"
             : "bg-surface/80 backdrop-blur-sm border border-border/50 text-text rounded-2xl rounded-tl-sm"
         } ${message.temp ? "opacity-60" : ""} shadow-md transition-opacity duration-200`}
       >
@@ -64,7 +64,7 @@ const MessageBubble = memo(({ message, isMine }) => {
             View Shared Location
           </a>
         ) : (
-          <p className="text-sm break-words whitespace-pre-wrap">{message.text}</p>
+          <p className="text-sm wrap-break-word whitespace-pre-wrap">{message.text}</p>
         )}
         
         <div
@@ -111,29 +111,27 @@ export function ChatPage() {
   const typingTimeoutRef = useRef(null);
   const messagesContainerRef = useRef(null);
 
-  
   const { sendMessage, isConnected, sendTyping } = useChatSocket(listingId, {
     onMessage: (message) => {
       setLocalMessages((prev) => {
-        const existsById = prev.some((m) => m._id === message._id);
-        if (existsById) {
-          return prev.map(m => {
-            if (m.temp && m.text === message.text && m.senderId === message.senderId) {
-              return message;
-            }
-            return m;
-          });
+        if (prev.some((m) => m._id === message._id)) {
+          return prev;
         }
         
-        const isDuplicateTemp = prev.some((m) => 
-          m.temp && 
-          m.text === message.text && 
-          m.senderId === message.senderId &&
-          Math.abs(new Date(m.timestamp) - new Date(message.timestamp)) < 2000
-        );
-        
-        if (isDuplicateTemp) {
-          return prev.filter(m => !(m.temp && m.text === message.text && m.senderId === message.senderId)).concat(message);
+        const isMine = message.senderId === (userInfo?._id || userInfo?.id);
+        if (isMine) {
+          const tempIndex = prev.findIndex(m => 
+            m.temp && 
+            m.text === message.text && 
+            Math.abs(new Date(m.timestamp) - new Date(message.timestamp)) < 5000
+          );
+          
+          if (tempIndex !== -1) {
+            const newMessages = [...prev];
+            message.clientId = prev[tempIndex].clientId || prev[tempIndex]._id;
+            newMessages[tempIndex] = message;
+            return newMessages;
+          }
         }
         
         dispatch(addReduxMessage(message));
@@ -153,7 +151,6 @@ export function ChatPage() {
     }
   });
 
-  // Fetch all user chats
   useEffect(() => {
     const fetchChats = async () => {
       if (!userInfo) return;
@@ -178,7 +175,6 @@ export function ChatPage() {
     fetchChats();
   }, [userInfo, dispatch]);
 
-  // Fetch messages for current listing
   useEffect(() => {
     const fetchMessages = async () => {
       if (!listingId || !userInfo) return;
@@ -212,7 +208,6 @@ export function ChatPage() {
 
   useEffect(() => {
     if (messagesEndRef.current) {
-     
       const shouldInstantScroll = localMessages.some(m => m.temp);
       messagesEndRef.current.scrollIntoView({ 
         behavior: shouldInstantScroll ? "auto" : "smooth",
@@ -221,7 +216,6 @@ export function ChatPage() {
     }
   }, [localMessages]);
 
-  // Handle typing
   const handleTyping = useCallback(() => {
     if (!sendTyping || !userInfo) return;
     
@@ -232,11 +226,9 @@ export function ChatPage() {
     }
     
     typingTimeoutRef.current = setTimeout(() => {
-      // Typing stopped
     }, 1000);
   }, [sendTyping, userInfo]);
 
- 
   const handleSend = async (e) => {
     e?.preventDefault();
     if (!messageInput.trim() || isSending || !isConnected) {
@@ -251,6 +243,7 @@ export function ChatPage() {
     
     const tempMessage = {
       _id: tempId,
+      clientId: tempId, // Permanent client-side ID for stable React key
       senderId: userInfo?._id || userInfo?.id,
       senderName: userInfo?.name,
       text: textToSend,
@@ -260,17 +253,19 @@ export function ChatPage() {
 
     setMessageInput("");
     
-    // Add temp message with instant scroll
     setLocalMessages((prev) => [...prev, tempMessage]);
     setIsSending(true);
 
     try {
-      await sendMessage(textToSend);
+      const response = await sendMessage(textToSend);
       
-      
-      setTimeout(() => {
-        setLocalMessages((prev) => prev.filter((m) => m._id !== tempId));
-      }, 300);
+      if (response?.success && response.message) {
+        const finalMessage = { ...response.message, clientId: tempId };
+        
+        setLocalMessages((prev) => 
+          prev.map((m) => (m._id === tempId ? finalMessage : m))
+        );
+      }
       
     } catch (err) {
       console.error("Send failed:", err);
@@ -283,7 +278,6 @@ export function ChatPage() {
     }
   };
 
-  // Share location
   const handleShareLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation not supported");
@@ -308,7 +302,6 @@ export function ChatPage() {
     );
   };
 
-  // Refresh messages
   const handleRefreshMessages = async () => {
     if (!listingId) return;
     
@@ -328,41 +321,43 @@ export function ChatPage() {
     }
   };
 
-  // Group chats
-  const groupedChats = localChatList.reduce((acc, chat) => {
-    if (!chat.participantId || chat.participantId === (userInfo?._id || userInfo?.id)) {
+  const groupedChats = React.useMemo(() => {
+    return localChatList.reduce((acc, chat) => {
+      if (!chat.participantId || chat.participantId === (userInfo?._id || userInfo?.id)) {
+        return acc;
+      }
+
+      const key = chat.participantId;
+      if (!acc[key]) {
+        acc[key] = {
+          participantId: chat.participantId,
+          participantName: chat.participantName,
+          avatar: chat.avatar,
+          chats: [],
+        };
+      }
+      acc[key].chats.push({
+        listingId: chat.listingId,
+        listingTitle: chat.listingTitle,
+        updatedAt: chat.updatedAt,
+        lastMessage: chat.lastMessage,
+      });
       return acc;
-    }
+    }, {});
+  }, [localChatList, userInfo]);
 
-    const key = chat.participantId;
-    if (!acc[key]) {
-      acc[key] = {
-        participantId: chat.participantId,
-        participantName: chat.participantName,
-        avatar: chat.avatar,
-        chats: [],
-      };
-    }
-    acc[key].chats.push({
-      listingId: chat.listingId,
-      listingTitle: chat.listingTitle,
-      updatedAt: chat.updatedAt,
-      lastMessage: chat.lastMessage,
-    });
-    return acc;
-  }, {});
-
-  const filteredGroupedChats = Object.values(groupedChats).filter(
-    (group) =>
-      group.participantName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      group.chats.some((chat) =>
-        chat.listingTitle?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-  );
+  const filteredGroupedChats = React.useMemo(() => {
+    return Object.values(groupedChats).filter(
+      (group) =>
+        group.participantName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        group.chats.some((chat) =>
+          chat.listingTitle?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+    );
+  }, [groupedChats, searchQuery]);
 
   const selectedChat = localChatList.find((c) => c.listingId === listingId);
 
-  // Show loading if no userInfo
   if (!userInfo) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -375,11 +370,11 @@ export function ChatPage() {
   }
 
   return (
-    <div className="relative w-full h-[calc(100vh-4rem)] flex bg-gradient-to-br from-background via-surface/20 to-background overflow-hidden">
+    <div className="relative w-full h-[calc(100vh-4rem)] flex bg-linear-to-br from-background via-surface/20 to-background overflow-hidden">
       
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-3xl opacity-50" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-accent/10 to-primary/10 rounded-full blur-3xl opacity-50" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-linear-to-br from-primary/10 to-accent/10 rounded-full blur-2xl opacity-50" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-linear-to-tr from-accent/10 to-primary/10 rounded-full blur-2xl opacity-50" />
       </div>
 
       <Sidebar
@@ -409,8 +404,7 @@ export function ChatPage() {
       <main className="flex-1 flex flex-col bg-surface/50 backdrop-blur-sm border-l border-border/50">
         {listingId && selectedChat ? (
           <>
-            {/* Header */}
-            <div className="border-b border-border/50 bg-surface/80 backdrop-blur-xl px-4 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+            <div className="border-b border-border/50 bg-surface/80 backdrop-blur-md px-4 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
               <div className="flex items-center gap-3">
                 <button
                   className="md:hidden text-muted hover:text-text transition-colors"
@@ -470,7 +464,6 @@ export function ChatPage() {
               </div>
             </div>
 
-            {/* Messages Area */}
             <div 
               ref={messagesContainerRef}
               className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent"
@@ -483,7 +476,7 @@ export function ChatPage() {
                 <AnimatePresence mode="popLayout" initial={false}>
                   {localMessages.map((message) => (
                     <MessageBubble 
-                      key={message._id} 
+                      key={message.clientId || message._id} 
                       message={message}
                       isMine={message.senderId === (userInfo?._id || userInfo?.id)}
                     />
@@ -524,7 +517,6 @@ export function ChatPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
             <div className="border-t border-border/50 p-4 bg-surface/80 backdrop-blur-xl">
               <form onSubmit={handleSend} className="flex items-center gap-3">
                 <button
@@ -568,7 +560,7 @@ export function ChatPage() {
                 <button
                   type="submit"
                   disabled={isSending || !messageInput.trim() || !isConnected}
-                  className="p-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-3 bg-linear-to-r from-primary to-accent text-white rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -590,7 +582,7 @@ export function ChatPage() {
           <div className="flex-1 flex items-center justify-center relative">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-medium md:hidden shadow-lg"
+              className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-linear-to-r from-primary to-accent text-white font-medium md:hidden shadow-lg"
             >
               <Menu className="w-5 h-5" /> 
               Chats

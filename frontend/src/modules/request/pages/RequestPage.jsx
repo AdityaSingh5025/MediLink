@@ -46,7 +46,6 @@ export function RequestsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch requests with better error handling and state management
   const fetchRequests = useCallback(async (showLoader = true, isRefresh = false) => {
     if (showLoader) {
       setLoading(true);
@@ -63,14 +62,12 @@ export function RequestsPage() {
         requestApi.getMyRequest("owner"),
       ]);
 
-      // Ensure we always set arrays
       const myData = Array.isArray(myRes?.data) ? myRes.data : [];
       const receivedData = Array.isArray(receivedRes?.data) ? receivedRes.data : [];
 
       setMyRequests(myData);
       setRequestsToMe(receivedData);
       
-      // Update Redux store
       dispatch(setRequests([...myData, ...receivedData]));
       
       if (isRefresh) {
@@ -96,12 +93,10 @@ export function RequestsPage() {
     }
   }, [dispatch]);
 
-  // Initial fetch
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
 
-  // Auto-refresh every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       fetchRequests(false, false);
@@ -110,11 +105,9 @@ export function RequestsPage() {
     return () => clearInterval(interval);
   }, [fetchRequests]);
 
-  // Handle request actions with optimistic updates
   const handleRequestAction = async (requestId, action) => {
     setActionLoading(requestId);
     
-    // Optimistic update
     const statusMap = {
       approve: "approved",
       reject: "rejected",
@@ -125,11 +118,9 @@ export function RequestsPage() {
 
     const newStatus = statusMap[action];
     
-    // Store original state for rollback
     const originalMyRequests = [...myRequests];
     const originalRequestsToMe = [...requestsToMe];
     
-    // Apply optimistic update
     setMyRequests(prev => 
       prev.map(req => 
         req._id === requestId ? { ...req, status: newStatus } : req
@@ -165,7 +156,6 @@ export function RequestsPage() {
       }
 
       if (res.success) {
-        // Success animation
         toast.success(
           <div className="flex items-center gap-2">
             <motion.div
@@ -179,13 +169,11 @@ export function RequestsPage() {
           </div>
         );
         
-        // Fetch fresh data after a delay
         setTimeout(() => {
           fetchRequests(false, false);
         }, 800);
         
       } else {
-        // Rollback on failure
         setMyRequests(originalMyRequests);
         setRequestsToMe(originalRequestsToMe);
         toast.error(res.error || `Failed to ${action} request`);
@@ -200,12 +188,10 @@ export function RequestsPage() {
     }
   };
 
-  // Navigate to chat with proper initialization
   const handleNavigateToChat = async (request) => {
     try {
       const loadingToast = toast.loading("Opening chat...");
       
-      // Small delay to ensure chat socket is ready
       setTimeout(() => {
         toast.dismiss(loadingToast);
         navigate(`/chat/${request.listingId?._id}`, {
@@ -310,7 +296,7 @@ export function RequestsPage() {
                   }}
                 />
               ) : (
-                <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center border-2 border-border">
+                <div className="w-20 h-20 bg-linear-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center border-2 border-border">
                   <Package className="w-10 h-10 text-primary/50" />
                 </div>
               )}
@@ -402,7 +388,7 @@ export function RequestsPage() {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleRequestAction(request._id, "approve")}
                       disabled={isProcessing}
-                      className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
+                      className="px-4 py-2 bg-linear-to-r from-green-500 to-emerald-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
                     >
                       {isProcessing ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -431,7 +417,7 @@ export function RequestsPage() {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleRequestAction(request._id, "donated")}
                     disabled={isProcessing}
-                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
                   >
                     {isProcessing ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -449,7 +435,7 @@ export function RequestsPage() {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleRequestAction(request._id, "complete")}
                     disabled={isProcessing}
-                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-linear-to-r from-green-500 to-emerald-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
                   >
                     {isProcessing ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -494,7 +480,7 @@ export function RequestsPage() {
 
         {/* Shine Effect */}
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"
+          className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"
           style={{ transform: "skewX(-20deg)" }}
         />
       </motion.div>
@@ -505,7 +491,7 @@ export function RequestsPage() {
 
   if (loading && myRequests.length === 0 && requestsToMe.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-surface/10 to-background flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-background via-surface/10 to-background flex items-center justify-center">
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
@@ -527,7 +513,7 @@ export function RequestsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-surface/10 to-background py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-background via-surface/10 to-background py-8 px-4 sm:px-6 lg:px-8">
       {/* Animated Background */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <motion.div
@@ -539,7 +525,7 @@ export function RequestsPage() {
             duration: 20,
             repeat: Infinity,
           }}
-          className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl"
+          className="absolute top-0 right-0 w-[600px] h-[600px] bg-linear-to-br from-primary/20 to-accent/20 rounded-full blur-3xl"
         />
         <motion.div
           animate={{
@@ -551,7 +537,7 @@ export function RequestsPage() {
             repeat: Infinity,
             delay: 5,
           }}
-          className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-accent/20 to-primary/20 rounded-full blur-3xl"
+          className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-linear-to-tr from-accent/20 to-primary/20 rounded-full blur-3xl"
         />
       </div>
 
@@ -564,7 +550,7 @@ export function RequestsPage() {
         >
           <div>
             <h1 className="text-4xl sm:text-5xl font-bold mb-3">
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                 Requests Dashboard
               </span>
             </h1>
@@ -613,7 +599,7 @@ export function RequestsPage() {
                 <motion.div
                   whileHover={{ rotate: [0, -10, 10, 0] }}
                   transition={{ duration: 0.5 }}
-                  className={`w-14 h-14 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
+                  className={`w-14 h-14 rounded-xl bg-linear-to-br ${stat.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
                 >
                   <stat.icon className="w-7 h-7 text-white" />
                 </motion.div>
@@ -637,7 +623,7 @@ export function RequestsPage() {
               onClick={() => setActiveTab("received")}
               className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
                 activeTab === "received"
-                  ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg"
+                  ? "bg-linear-to-r from-primary to-accent text-white shadow-lg"
                   : "bg-background text-muted hover:text-text"
               }`}
             >
@@ -651,7 +637,7 @@ export function RequestsPage() {
               onClick={() => setActiveTab("sent")}
               className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
                 activeTab === "sent"
-                  ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg"
+                  ? "bg-linear-to-r from-primary to-accent text-white shadow-lg"
                   : "bg-background text-muted hover:text-text"
               }`}
             >
@@ -707,73 +693,91 @@ export function RequestsPage() {
         <div className="space-y-4">
           <AnimatePresence mode="wait">
             {activeTab === "received" ? (
-              filterRequests(requestsToMe).length > 0 ? (
-                filterRequests(requestsToMe).map((request, index) => (
-                  <RequestCard 
-                    key={request._id || index} 
-                    request={request} 
-                    isReceived 
-                  />
-                ))
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="text-center py-16"
-                >
+              <motion.div
+                key="received-container"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
+              >
+                {filterRequests(requestsToMe).length > 0 ? (
+                  filterRequests(requestsToMe).map((request, index) => (
+                    <RequestCard 
+                      key={request._id || index} 
+                      request={request} 
+                      isReceived 
+                    />
+                  ))
+                ) : (
                   <motion.div
-                    animate={{ 
-                      y: [0, -10, 0],
-                      rotate: [0, 5, -5, 0] 
-                    }}
-                    transition={{ 
-                      duration: 3,
-                      repeat: Infinity 
-                    }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-16"
                   >
-                    <Inbox className="w-20 h-20 text-muted/30 mx-auto mb-4" />
+                    <motion.div
+                      animate={{ 
+                        y: [0, -10, 0],
+                        rotate: [0, 5, -5, 0] 
+                      }}
+                      transition={{ 
+                        duration: 3,
+                        repeat: Infinity 
+                      }}
+                    >
+                      <Inbox className="w-20 h-20 text-muted/30 mx-auto mb-4" />
+                    </motion.div>
+                    <h3 className="text-xl font-semibold text-text mb-2">
+                      No requests received yet
+                    </h3>
+                    <p className="text-muted">
+                      Requests from others will appear here
+                    </p>
                   </motion.div>
-                  <h3 className="text-xl font-semibold text-text mb-2">
-                    No requests received yet
-                  </h3>
-                  <p className="text-muted">
-                    Requests from others will appear here
-                  </p>
-                </motion.div>
-              )
-            ) : filterRequests(myRequests).length > 0 ? (
-              filterRequests(myRequests).map((request, index) => (
-                <RequestCard 
-                  key={request._id || index} 
-                  request={request} 
-                />
-              ))
+                )}
+              </motion.div>
             ) : (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="text-center py-16"
+                key="sent-container"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
               >
-                <motion.div
-                  animate={{ 
-                    y: [0, -10, 0],
-                    rotate: [0, -5, 5, 0] 
-                  }}
-                  transition={{ 
-                    duration: 3,
-                    repeat: Infinity 
-                  }}
-                >
-                  <SendHorizontal className="w-20 h-20 text-muted/30 mx-auto mb-4" />
-                </motion.div>
-                <h3 className="text-xl font-semibold text-text mb-2">
-                  No requests sent yet
-                </h3>
-                <p className="text-muted">
-                  Start requesting items to see them here
-                </p>
+                {filterRequests(myRequests).length > 0 ? (
+                  filterRequests(myRequests).map((request, index) => (
+                    <RequestCard 
+                      key={request._id || index} 
+                      request={request} 
+                    />
+                  ))
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-16"
+                  >
+                    <motion.div
+                      animate={{ 
+                        y: [0, -10, 0],
+                        rotate: [0, -5, 5, 0] 
+                      }}
+                      transition={{ 
+                        duration: 3,
+                        repeat: Infinity 
+                      }}
+                    >
+                      <SendHorizontal className="w-20 h-20 text-muted/30 mx-auto mb-4" />
+                    </motion.div>
+                    <h3 className="text-xl font-semibold text-text mb-2">
+                      No requests sent yet
+                    </h3>
+                    <p className="text-muted">
+                      Start requesting items to see them here
+                    </p>
+                  </motion.div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

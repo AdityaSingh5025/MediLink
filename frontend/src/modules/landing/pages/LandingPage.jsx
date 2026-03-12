@@ -70,7 +70,7 @@ export function LandingPage() {
       {/* Simplified Background - Static on mobile, animated on desktop */}
       <div className="fixed inset-0 -z-10">
         {/* Simple gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5" />
+        <div className="absolute inset-0 bg-linear-to-br from-background via-background to-primary/5" />
         
         {/* Only add light effects on desktop */}
         {!isMobile && (
@@ -114,7 +114,7 @@ export function LandingPage() {
               transition={{ duration: 0.6 }}
               className="flex items-center gap-3 mb-2"
             >
-              <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-linear-to-r from-primary to-accent rounded-lg flex items-center justify-center shadow-lg">
                 <Heart className="w-5 h-5 text-white" fill="currentColor" />
               </div>
               <h1 className="text-4xl font-bold text-primary">MediLink</h1>
@@ -159,7 +159,7 @@ export function LandingPage() {
                 >
                   <button
                     onClick={() => (window.location.href = "/auth")}
-                    className="bg-gradient-to-r from-primary to-accent text-white font-medium text-lg px-6 py-3 rounded-lg shadow-lg flex items-center justify-center gap-2 hover:shadow-xl transition-shadow"
+                    className="bg-linear-to-r from-primary to-accent text-white font-medium text-lg px-6 py-3 rounded-lg shadow-lg flex items-center justify-center gap-2 hover:shadow-xl transition-shadow"
                   >
                     <span>Start Donating</span>
                     <ArrowRight className="w-5 h-5" />
@@ -201,7 +201,7 @@ export function LandingPage() {
             <div className="relative">
               {/* Simple static glow instead of animated */}
               {!isMobile && (
-                <div className="absolute -inset-8 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-2xl" />
+                <div className="absolute -inset-8 bg-linear-to-r from-primary/20 to-accent/20 rounded-3xl blur-2xl" />
               )}
               
               <img
@@ -228,7 +228,7 @@ export function LandingPage() {
                 className="text-center space-y-2"
               >
                 <div className="flex justify-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 bg-linear-to-r from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
                     <stat.icon className="w-6 h-6 text-white" />
                   </div>
                 </div>
@@ -271,7 +271,7 @@ export function LandingPage() {
                 className="group bg-surface border border-border rounded-xl p-6 hover:shadow-lg transition-shadow"
               >
                 <div
-                  className={`w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center shadow-lg`}
+                  className={`w-14 h-14 mx-auto mb-4 rounded-xl bg-linear-to-r ${feature.color} flex items-center justify-center shadow-lg`}
                 >
                   <Icon className="w-6 h-6 text-white" />
                 </div>
@@ -288,9 +288,8 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Call to Action - Simplified */}
       {!isAuthenticated && (
-        <section className="w-full relative bg-gradient-to-br from-primary via-primary to-accent">
+        <section className="w-full relative bg-linear-to-br from-primary via-primary to-accent">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

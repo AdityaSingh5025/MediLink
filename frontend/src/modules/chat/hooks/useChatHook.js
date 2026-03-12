@@ -14,23 +14,27 @@ export function useChatSocket(listingId, handlers = {}) {
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const socketRef = useRef(null);
   const isJoiningRef = useRef(false);
-  const { userInfo } = useSelector((state) => state.auth);
-
-  const { onMessage, onTyping, onUserJoined, onUserLeft } = handlers;
+  const { userInfo, accessToken } = useSelector((state) => state.auth);
+  
+  const handlersRef = useRef(handlers);
+  useEffect(() => {
+    handlersRef.current = handlers;
+  }, [handlers]);
 
   useEffect(() => {
+    // console.log("🔍 [useChatSocket] Effect triggered for listing:", listingId, "User ID:", userInfo?._id);
+    
     if (!listingId || !userInfo) {
-      console.warn("Waiting for listingId or userInfo...");
       return;
     }
 
     let isComponentMounted = true;
 
     const setupSocket = () => {
-      const currentToken = store.getState().auth.accessToken;
+      const currentToken = accessToken;
 
       if (!currentToken) {
-        console.error("No access token found");
+        // console.warn("No access token found");
         return;
       }
 
@@ -39,172 +43,94 @@ export function useChatSocket(listingId, handlers = {}) {
 
       // Reuse existing socket if it's connected and authenticated
       if (globalSocket?.connected && globalSocket?.auth?.token === currentToken) {
-        // console.log("Reusing existing socket connection");
         socketRef.current = globalSocket;
-
-        // Leave old room if different
-        if (currentListingId && currentListingId !== listingId) {
-          // console.log("Leaving old room:", currentListingId);
-          globalSocket.emit("leaveRoom", { listingId: currentListingId });
+        // console.log("Reusing existing socket connection");
+      } else {
+        // Disconnect old socket if it exists but is incompatible
+        if (globalSocket) {
+          console.log("🔌 Replacing stale socket");
+          globalSocket.removeAllListeners();
+          globalSocket.disconnect();
+          globalSocket = null;
         }
 
-        // Join new room
-        joinRoom(globalSocket, listingId, userInfo);
-        currentListingId = listingId;
-        return;
+        console.log("🔌 Creating new socket connection to:", SOCKET_URL);
+        globalSocket = io(SOCKET_URL, {
+          withCredentials: true,
+          transports: ["websocket", "polling"],
+          auth: {
+            token: currentToken,
+            userId: userInfo._id || userInfo.id,
+            userName: userInfo.name
+          },
+          reconnection: true,
+          reconnectionDelay: 1000,
+          reconnectionAttempts: 5,
+        });
+        socketRef.current = globalSocket;
       }
 
-      // Disconnect old socket if exists
-      if (globalSocket) {
-        console.log("🔌 Disconnecting old socket");
-        globalSocket.removeAllListeners();
-        globalSocket.disconnect();
-        globalSocket = null;
-      }
+      const socket = globalSocket;
 
-      console.log("🔌 Creating new socket connection to:", SOCKET_URL);
-
-      const socket = io(SOCKET_URL, {
-        withCredentials: true,
-        transports: ["websocket", "polling"],
-        auth: {
-          token: currentToken,
-          userId: userInfo._id || userInfo.id,
-          userName: userInfo.name
-        },
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5,
-        timeout: 20000,
-        autoConnect: true,
-      });
-
-      globalSocket = socket;
-      socketRef.current = socket;
-      currentListingId = listingId;
-
-      // Connection events
-      socket.on("connect", () => {
-        if (!isComponentMounted) return;
-        console.log("Socket connected:", socket.id);
+      // Listeners using handlersRef for fresh callbacks
+      const onConnect = () => {
         setIsConnected(true);
         setReconnectAttempts(0);
-        toast.dismiss(); // Clear any error toasts
-
-        // Join room after connection
+        toast.dismiss();
         joinRoom(socket, listingId, userInfo);
-      });
+      };
 
-      socket.on("disconnect", (reason) => {
-        if (!isComponentMounted) return;
-        console.log("Socket disconnected:", reason);
+      const onDisconnect = (reason) => {
         setIsConnected(false);
         setIsRoomJoined(false);
         isJoiningRef.current = false;
-      });
+      };
 
-      socket.on("reconnect_attempt", (attemptNumber) => {
-        if (!isComponentMounted) return;
-        console.log("Reconnect attempt:", attemptNumber);
-        setReconnectAttempts(attemptNumber);
-
-        if (attemptNumber === 1) {
-          toast.loading("Reconnecting...", { id: "reconnecting" });
+      const onJoinSuccess = ({ listingId: joinedRoom }) => {
+        if (joinedRoom === listingId) {
+          setIsRoomJoined(true);
+          isJoiningRef.current = false;
         }
-      });
+      };
 
-      socket.on("reconnect", (attemptNumber) => {
-        if (!isComponentMounted) return;
-        console.log("Reconnected after", attemptNumber, "attempts");
-        toast.dismiss("reconnecting");
-        toast.success("Reconnected!", { duration: 2000 });
+      const onReceiveMessage = (msg) => {
+        handlersRef.current.onMessage?.(msg);
+      };
 
-        // Rejoin room after reconnection
-        joinRoom(socket, listingId, userInfo);
-      });
+      const onUserTyping = (data) => {
+        handlersRef.current.onTyping?.(data);
+      };
 
-      socket.on("reconnect_failed", () => {
-        if (!isComponentMounted) return;
-        console.error("Reconnection failed");
-        toast.dismiss("reconnecting");
-        toast.error("Connection lost. Please refresh the page.");
-      });
+      const onError = (err) => {
+        toast.error(err.message || "Socket error");
+      };
 
-      // Room events
-      socket.on("joinSuccess", ({ listingId: joinedRoom, chatId }) => {
-        if (!isComponentMounted) return;
-        console.log("Successfully joined room:", joinedRoom);
-        setIsRoomJoined(true);
-        isJoiningRef.current = false;
-      });
+      // Attach
+      socket.on("connect", onConnect);
+      socket.on("disconnect", onDisconnect);
+      socket.on("joinSuccess", onJoinSuccess);
+      socket.on("receiveMessage", onReceiveMessage);
+      socket.on("userTyping", onUserTyping);
+      socket.on("error", onError);
 
-      // Message events
-      socket.on("receiveMessage", (message) => {
-        if (!isComponentMounted) return;
-        console.log("Message received:", message);
-        if (typeof onMessage === "function") {
-          onMessage(message);
-        }
-      });
-
-      // Typing events
-      socket.on("userTyping", (data) => {
-        if (!isComponentMounted) return;
-        if (typeof onTyping === "function") {
-          onTyping(data);
-        }
-      });
-
-      socket.on("userStoppedTyping", (data) => {
-        if (!isComponentMounted) return;
-        // Handle stop typing if needed
-      });
-
-      // User events
-      socket.on("userJoined", (data) => {
-        if (!isComponentMounted) return;
-        console.log("👤 User joined:", data.userName);
-        if (typeof onUserJoined === "function") {
-          onUserJoined(data);
-        }
-      });
-
-      socket.on("userLeft", (data) => {
-        if (!isComponentMounted) return;
-        if (typeof onUserLeft === "function") {
-          onUserLeft(data);
-        }
-      });
-
-      // Error events
-      socket.on("error", (err) => {
-        if (!isComponentMounted) return;
-        console.error("Socket error:", err);
-        toast.error(err.message || "Socket error occurred");
-      });
-
-      socket.on("connect_error", (err) => {
-        if (!isComponentMounted) return;
-        console.error("Connection error:", err.message);
-
-        if (err.message?.includes("jwt") || err.message?.includes("token")) {
-          console.warn("Token issue, will retry...");
-          // Let socket.io handle reconnection
-        }
-      });
-    };
-
-    // Helper function to join room
-    const joinRoom = (socket, roomId, user) => {
-      if (isJoiningRef.current) {
-        console.log("⏳ Already joining room, skipping...");
-        return;
+      // Join if already connected
+      if (socket.connected) {
+        onConnect();
       }
 
-      isJoiningRef.current = true;
-      // console.log("Joining room:", roomId);
+      return () => {
+        socket.off("connect", onConnect);
+        socket.off("disconnect", onDisconnect);
+        socket.off("joinSuccess", onJoinSuccess);
+        socket.off("receiveMessage", onReceiveMessage);
+        socket.off("userTyping", onUserTyping);
+        socket.off("error", onError);
+      };
+    };
 
+    const joinRoom = (socket, roomId, user) => {
+      if (isJoiningRef.current || isRoomJoined) return;
+      isJoiningRef.current = true;
       socket.emit("joinRoom", {
         listingId: roomId,
         userId: user._id || user.id,
@@ -212,23 +138,21 @@ export function useChatSocket(listingId, handlers = {}) {
       });
     };
 
-    setupSocket();
+    const cleanupListeners = setupSocket();
 
-    // Cleanup
     return () => {
-      // console.log("Cleaning up chat hook for listing:", listingId);
-      isComponentMounted = false;
       setIsRoomJoined(false);
       isJoiningRef.current = false;
 
-      // Don't disconnect global socket, just leave the room
-      if (globalSocket && currentListingId === listingId) {
-        console.log("Leaving room:", listingId);
+      if (cleanupListeners) cleanupListeners();
+
+      if (globalSocket && globalSocket.connected) {
         globalSocket.emit("leaveRoom", { listingId });
-        currentListingId = null;
       }
+      
+      socketRef.current = null;
     };
-  }, [listingId, userInfo?._id]); // Only re-run when these change
+  }, [listingId, userInfo?._id, accessToken]); 
 
   // Send message
   const sendMessage = useCallback((text) => {
@@ -279,7 +203,7 @@ export function useChatSocket(listingId, handlers = {}) {
           toast.error("Failed to send message");
           reject(new Error(response.error));
         } else {
-          console.log("Message sent successfully");
+          // console.log("Message sent successfully");
           resolve(response);
         }
       });
