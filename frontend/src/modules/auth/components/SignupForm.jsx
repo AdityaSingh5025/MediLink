@@ -61,7 +61,7 @@ const SignupForm = ({ onSignupSuccess }) => {
       const result = await authApi.signup(payload);
 
       if (result?.success) {
-        toast.success("Account created! Check your email for verification code 📧");
+        toast.success("Account created! Check your email for verification code");
         if (onSignupSuccess) onSignupSuccess(data.email);
       } else {
         toast.error(result?.error || "Signup failed. Please try again.");

@@ -166,7 +166,7 @@ export const CreateListingPage = () => {
       const result = await listingApi.createListing(payload);
 
       if (result.success) {
-        toast.success("Listing created successfully! 🎉");
+        toast.success("Listing created successfully!");
         navigate("/dashboard/my-listings");
       } else {
         toast.error(result.error || "Failed to create listing");

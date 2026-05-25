@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Shield, Users, Zap } from "lucide-react";
+import { Heart, Shield, Users, Zap, Lock } from "lucide-react";
 import LoginForm from "../components/LoginForm";
 import SignupForm from "../components/SignupForm";
 import VerifyEmailForm from "../components/VerifyForm";
@@ -201,8 +201,8 @@ const AuthPage = () => {
 
               {/* Footer */}
               <div className="p-6 border-t border-border bg-surface">
-                <p className="text-xs text-center text-muted">
-                  🔒 Secure authentication powered by industry-standard encryption
+                <p className="text-xs text-center text-muted flex items-center justify-center gap-1">
+                  <Lock className="w-3 h-3" /> Secure authentication powered by industry-standard encryption
                 </p>
               </div>
             </div>

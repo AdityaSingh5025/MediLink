@@ -71,7 +71,7 @@ export function RequestsPage() {
       dispatch(setRequests([...myData, ...receivedData]));
       
       if (isRefresh) {
-        toast.success("Requests refreshed successfully! ✨");
+        toast.success("Requests refreshed successfully!");
       }
       
       return { success: true };

@@ -31,7 +31,7 @@ const ForgotPasswordForm = () => {
 
       if (result.success) {
         setEmailSent(true);
-        toast.success("Password reset link sent to your email! 📧");
+        toast.success("Password reset link sent to your email!");
       } else {
         toast.error(result.error || "Failed to send reset link");
       }

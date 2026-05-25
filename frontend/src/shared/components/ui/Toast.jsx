@@ -2,7 +2,7 @@ import React from "react";
 import { Toaster } from "sonner";
 
 /**
- * 💙 MediLink Custom Toast Provider
+ * MediLink Custom Toast Provider
  * - Matches your dark blue theme
  * - Adds soft blur and gradient glow
  * - Uses Sonner rich colors + rounded corners

@@ -80,13 +80,6 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-app.get("/api/health", (req, res) =>
-  res.json({
-    ok: true,
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development",
-  }),
-);
 
 // Socket.IO Configuration
 const io = new Server(server, {

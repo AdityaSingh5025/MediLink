@@ -21,9 +21,11 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useSelector } from "react-redux";
-import { MyListingsPage } from "../../listing/pages/MyListingPage";
-import { CreateListingPage } from "../../listing/pages/CreateListingPage";
-import ProfilePage from "../../auth/profile/pages/ProfilePage";
+import { Suspense, lazy } from "react";
+
+const MyListingsPage = lazy(() => import("../../listing/pages/MyListingPage").then(module => ({ default: module.MyListingsPage })));
+const CreateListingPage = lazy(() => import("../../listing/pages/CreateListingPage").then(module => ({ default: module.CreateListingPage })));
+const ProfilePage = lazy(() => import("../../auth/profile/pages/ProfilePage"));
 
 export const DashboardPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -139,7 +141,7 @@ export const DashboardPage = () => {
                 </span>
               </h1>
               <p className="text-sm text-muted mt-1">
-                Welcome back to your dashboard 🎉
+                Welcome back to your dashboard <Sparkles className="inline w-4 h-4 ml-1 text-yellow-500" />
               </p>
             </motion.div>
 
@@ -328,12 +330,14 @@ export const DashboardPage = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <Routes>
-              <Route index element={<Navigate to="my-listings" replace />} />
-              <Route path="my-listings" element={<MyListingsPage />} />
-              <Route path="create-listing" element={<CreateListingPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-            </Routes>
+            <Suspense fallback={<div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+              <Routes>
+                <Route index element={<Navigate to="my-listings" replace />} />
+                <Route path="my-listings" element={<MyListingsPage />} />
+                <Route path="create-listing" element={<CreateListingPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+              </Routes>
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </main>

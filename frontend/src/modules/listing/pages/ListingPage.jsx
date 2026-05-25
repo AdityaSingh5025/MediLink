@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { listingApi } from "../services/listingApi";
 import { setListing, setLoading } from "../store/listingSlice";
 import { toast } from "sonner";
+import { getOptimizedCloudinaryUrl } from "../../../shared/utils/imageOptimization";
 import {
   MapPin,
   Clock,
@@ -147,7 +148,7 @@ export const PublicListingPage = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         toast.dismiss(loadingToast);
-        toast.success("Showing nearest items! 📍");
+        toast.success("Showing nearest items!");
         setUserLocation({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
@@ -316,7 +317,7 @@ export const PublicListingPage = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              Browse available medicines and equipment near you 💊
+              Browse available medicines and equipment near you
             </motion.p>
           </motion.div>
 
@@ -597,8 +598,9 @@ export const PublicListingPage = () => {
                         <motion.img
                           whileHover={{ scale: 1.1 }}
                           transition={{ duration: 0.6 }}
-                          src={item.photoURL}
+                          src={getOptimizedCloudinaryUrl(item.photoURL, 600)}
                           alt={item.title}
+                          loading="lazy"
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.target.style.display = "none";
@@ -812,8 +814,9 @@ export const PublicListingPage = () => {
                   <div className="shrink-0">
                     {selectedListing.photoURL ? (
                       <img
-                        src={selectedListing.photoURL}
+                        src={getOptimizedCloudinaryUrl(selectedListing.photoURL, 400)}
                         alt={selectedListing.title}
+                        loading="lazy"
                         className="w-20 h-20 object-cover rounded-xl border border-border"
                       />
                     ) : (
@@ -863,7 +866,7 @@ export const PublicListingPage = () => {
                   onSuccess={(data) => {
                     console.log("Request created:", data);
                     setShowRequestModal(false);
-                    toast.success("Request submitted successfully! 🎉");
+                    toast.success("Request submitted successfully!");
                   }}
                 />
               </div>

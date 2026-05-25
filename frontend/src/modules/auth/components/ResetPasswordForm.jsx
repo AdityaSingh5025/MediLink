@@ -42,7 +42,7 @@ const ResetPasswordForm = () => {
 
       if (result.success) {
         setResetSuccess(true);
-        toast.success("Password reset successful! 🎉");
+        toast.success("Password reset successful!");
         setTimeout(() => navigate("/auth"), 3000);
       } else {
         toast.error(result.error || "Failed to reset password");

@@ -26,6 +26,7 @@ import {
   Loader2,
   ArrowLeft,
   RefreshCw,
+  MessageSquare,
 } from "lucide-react";
 
 
@@ -290,7 +291,7 @@ export function ChatPage() {
       (pos) => {
         toast.dismiss(loadingToast);
         const { latitude, longitude } = pos.coords;
-        const locationUrl = `📍 Location shared: https://www.google.com/maps?q=${latitude},${longitude}`;
+        const locationUrl = `Location shared: https://www.google.com/maps?q=${latitude},${longitude}`;
         sendMessage(locationUrl);
         toast.success("Location shared!");
       },
@@ -485,7 +486,7 @@ export function ChatPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center py-20">
                   <MessageCircle className="w-16 h-16 text-muted/30 mb-4" />
-                  <p className="text-muted">No messages yet. Start the conversation! 💬</p>
+                  <p className="text-muted flex items-center justify-center gap-1">No messages yet. Start the conversation! <MessageSquare className="w-4 h-4" /></p>
                 </div>
               )}
               

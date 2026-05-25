@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { listingApi } from "../services/listingApi";
 import { setMyListings, setLoading } from "../store/listingSlice";
 import { toast } from "sonner";
+import { getOptimizedCloudinaryUrl } from "../../../shared/utils/imageOptimization";
 import {
   Package,
   Pill,
@@ -138,7 +139,7 @@ export const MyListingsPage = () => {
     setIsWorking(true);
     const res = await listingApi.updateListingStatus(id, status);
     if (res.success) {
-      toast.success(`Status updated to "${status}"! ✅`);
+      toast.success(`Status updated to "${status}"!`);
       await fetchMyListings();
     } else {
       toast.error(res.error || "Failed to update status");
@@ -176,7 +177,7 @@ export const MyListingsPage = () => {
     setIsWorking(false);
 
     if (res.success) {
-      toast.success("Listing updated successfully! ✅");
+      toast.success("Listing updated successfully!");
       await fetchMyListings();
       setEditingListing(null);
       setEditForm({ title: "", description: "", city: "", photoURL: "" });
@@ -197,7 +198,7 @@ export const MyListingsPage = () => {
     setIsWorking(false);
 
     if (res.success) {
-      toast.success("Listing deleted successfully! 🗑️");
+      toast.success("Listing deleted successfully!");
       await fetchMyListings();
       setDeleteTarget(null);
     } else {
@@ -326,8 +327,9 @@ export const MyListingsPage = () => {
                   <div className="relative h-48 bg-linear-to-br from-primary/10 to-accent/10 overflow-hidden">
                     {listing.photoURL ? (
                       <img
-                        src={listing.photoURL}
+                        src={getOptimizedCloudinaryUrl(listing.photoURL, 600)}
                         alt={listing.title}
+                        loading="lazy"
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.style.display = "none";
@@ -537,8 +539,9 @@ export const MyListingsPage = () => {
                   {editForm.photoURL ? (
                     <div className="relative group">
                       <img
-                        src={editForm.photoURL}
+                        src={getOptimizedCloudinaryUrl(editForm.photoURL, 600)}
                         alt="Preview"
+                        loading="lazy"
                         className="w-full h-48 object-cover rounded-xl border border-border"
                       />
                       <button

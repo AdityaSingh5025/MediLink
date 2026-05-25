@@ -106,7 +106,7 @@ export const RequestForm = ({ listingId, listingType, onSuccess }) => {
       });
 
       if (response.success) {
-        toast.success("Request submitted successfully! 🎉");
+        toast.success("Request submitted successfully!");
         reset();
         setPrescriptionFile(null);
         setPrescriptionPreview(null);
@@ -227,6 +227,7 @@ export const RequestForm = ({ listingId, listingType, onSuccess }) => {
                   <img
                     src={prescriptionPreview}
                     alt="Prescription preview"
+                    loading="lazy"
                     className="w-full h-48 object-cover rounded-xl border border-border"
                   />
                 )}

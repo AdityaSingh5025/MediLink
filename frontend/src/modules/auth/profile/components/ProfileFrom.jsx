@@ -203,8 +203,8 @@ export default function ProfileForm({ userInfo, profileData, refreshProfile }) {
       if (res.success) {
         toast.success(
           profileData
-            ? "Profile updated successfully! ✅"
-            : "Profile created successfully! 🎉"
+            ? "Profile updated successfully!"
+            : "Profile created successfully!"
         );
         setIsEditing(false);
         // Refresh profile to get updated data with populated user
@@ -457,9 +457,9 @@ export default function ProfileForm({ userInfo, profileData, refreshProfile }) {
                   disabled={!isEditing}
                   className="flex-1 px-3 py-1.5 sm:py-2 bg-surface border border-border rounded-lg text-text text-xs sm:text-sm capitalize"
                 >
-                  <option value="home">🏠 Home</option>
-                  <option value="work">💼 Work</option>
-                  <option value="other">📍 Other</option>
+                  <option value="home">Home</option>
+                  <option value="work">Work</option>
+                  <option value="other">Other</option>
                 </select>
                 {isEditing && (
                   <motion.button

@@ -348,7 +348,7 @@ export const LeaderboardPage = () => {
             transition={{ delay: 0.5 }}
             className="text-muted text-lg sm:text-xl max-w-3xl mx-auto"
           >
-            Celebrating our amazing donors making the world a better place 🌟
+            Celebrating our amazing donors making the world a better place <Sparkles className="inline w-5 h-5 ml-1 text-yellow-400" />
           </motion.p>
         </motion.div>
 
@@ -501,6 +501,7 @@ export const LeaderboardPage = () => {
                             userStats.name || "User"
                           )}`}
                           alt={userStats.name}
+                          loading="lazy"
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -670,6 +671,7 @@ export const LeaderboardPage = () => {
                                 user.name || "User"
                               )}`}
                               alt={user.name}
+                              loading="lazy"
                               className="w-full h-full object-cover"
                             />
                           </motion.div>
@@ -703,11 +705,13 @@ export const LeaderboardPage = () => {
                           transition={{ delay: 1.4 + position * 0.2 }}
                           className={`text-sm font-bold mb-4 ${colors.text}`}
                         >
-                          {rank === 1
-                            ? "🏆 Champion"
-                            : rank === 2
-                            ? "🥈 Runner Up"
-                            : "🥉 Third Place"}
+                          {rank === 1 ? (
+                            <span className="flex items-center gap-2 justify-center"><Trophy className="w-4 h-4" /> Champion</span>
+                          ) : rank === 2 ? (
+                            <span className="flex items-center gap-2 justify-center"><Medal className="w-4 h-4" /> Runner Up</span>
+                          ) : (
+                            <span className="flex items-center gap-2 justify-center"><Award className="w-4 h-4" /> Third Place</span>
+                          )}
                         </motion.p>
 
                         <motion.div
@@ -875,6 +879,7 @@ export const LeaderboardPage = () => {
                                     user.name || "User"
                                   )}`}
                                   alt={user.name}
+                                  loading="lazy"
                                   className="w-full h-full object-cover"
                                 />
                               </motion.div>

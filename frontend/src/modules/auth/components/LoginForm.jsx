@@ -33,7 +33,7 @@ const LoginForm = () => {
       const result = await authApi.login(data.email, data.password);
 
       if (result.success) {
-        toast.success("Welcome back! 🎉");
+        toast.success("Welcome back!");
 
         dispatch(
           loginSuccess({

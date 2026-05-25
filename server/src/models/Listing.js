@@ -88,6 +88,8 @@ ListingSchema.index({ ownerId: 1 });
 ListingSchema.index({ type: 1, status: 1 });
 ListingSchema.index({ "location.city": 1 });
 ListingSchema.index({ status: 1, createdAt: -1 });
+ListingSchema.index({ type: 1, createdAt: -1 });
+ListingSchema.index({ createdAt: -1 });
 ListingSchema.index({ expiryDate: 1 }); // For medicine queries
 
 //  Auto-update status for expired medicines

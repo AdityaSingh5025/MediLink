@@ -87,7 +87,7 @@ const VerifyEmailForm = ({ email, onVerifySuccess, onBack }) => {
       const result = await authApi.verifyEmail(email, code);
 
       if (result.success) {
-        toast.success("Email verified successfully! 🎉");
+        toast.success("Email verified successfully!");
         setTimeout(() => {
           onVerifySuccess();
         }, 1000);
@@ -117,7 +117,7 @@ const VerifyEmailForm = ({ email, onVerifySuccess, onBack }) => {
       const result = await authApi.resendOtp(email);
 
       if (result.success) {
-        toast.success("New verification code sent! 📧");
+        toast.success("New verification code sent!");
         setTimeLeft(300);
         setResendCooldown(60);
         setOtp(["", "", "", "", "", ""]);
