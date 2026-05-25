@@ -31,9 +31,8 @@ app.set("trust proxy", 1); // Enable trust proxy for secure cookies behind Verce
 
 const allowedOrigins = process.env.FRONTEND_URLS?.split(",") || [
   "http://localhost:5173",
-  "http://localhost:3000"
+  "http://localhost:3000",
 ];
-
 
 app.use(
   cors({
@@ -50,7 +49,11 @@ app.use(
       }
 
       // Allow any localhost in development
-      if (process.env.NODE_ENV === "development" && origin && origin.startsWith("http://localhost:")) {
+      if (
+        process.env.NODE_ENV === "development" &&
+        origin &&
+        origin.startsWith("http://localhost:")
+      ) {
         return cb(null, true);
       }
 
@@ -60,7 +63,7 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 // Routes
@@ -73,11 +76,17 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/leaderboard", leaderBoardRoutes);
 
 // Health check
-app.get("/api/health", (req, res) => res.json({
-  ok: true,
-  timestamp: new Date().toISOString(),
-  environment: process.env.NODE_ENV || 'development'
-}));
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.get("/api/health", (req, res) =>
+  res.json({
+    ok: true,
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
+  }),
+);
 
 // Socket.IO Configuration
 const io = new Server(server, {
@@ -94,7 +103,7 @@ const io = new Server(server, {
     credentials: true,
     methods: ["GET", "POST"],
   },
-  transports: ['websocket', 'polling'],
+  transports: ["websocket", "polling"],
   pingTimeout: 60000,
   pingInterval: 25000,
 });
@@ -112,7 +121,7 @@ io.use(async (socket, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Fetch user details
-    const user = await User.findById(decoded.id).select('name email avatar');
+    const user = await User.findById(decoded.id).select("name email avatar");
 
     if (!user) {
       // console.log("Socket connection rejected: User not found");
@@ -123,14 +132,20 @@ io.use(async (socket, next) => {
       id: decoded.id,
       name: user.name,
       email: user.email,
-      avatar: user.avatar
+      avatar: user.avatar,
     };
 
     // console.log("Socket authenticated:", user.name);
     next();
   } catch (err) {
     console.error("Socket auth failed:", err.message);
-    next(new Error(err.message.includes('jwt') ? 'Invalid or expired token' : 'Authentication failed'));
+    next(
+      new Error(
+        err.message.includes("jwt")
+          ? "Invalid or expired token"
+          : "Authentication failed",
+      ),
+    );
   }
 });
 
@@ -171,7 +186,7 @@ io.on("connection", (socket) => {
       socket.emit("joinSuccess", {
         listingId,
         chatId: chat._id,
-        participants: chat.participants
+        participants: chat.participants,
       });
 
       // Notify others in the room
@@ -187,90 +202,92 @@ io.on("connection", (socket) => {
   });
 
   // Send Message
-  socket.on("sendMessage", async ({ listingId, text, senderId, senderName }, callback) => {
-    try {
-      // console.log(`Message from ${socket.user.name} to room ${listingId}`);
+  socket.on(
+    "sendMessage",
+    async ({ listingId, text, senderId, senderName }, callback) => {
+      try {
+        // console.log(`Message from ${socket.user.name} to room ${listingId}`);
 
-      // Validate input
-      if (!text || typeof text !== "string" || !text.trim()) {
-        const error = { error: "Invalid message text" };
-        if (callback) callback(error);
-        return socket.emit("error", error);
+        // Validate input
+        if (!text || typeof text !== "string" || !text.trim()) {
+          const error = { error: "Invalid message text" };
+          if (callback) callback(error);
+          return socket.emit("error", error);
+        }
+
+        if (!listingId) {
+          const error = { error: "Listing ID required" };
+          if (callback) callback(error);
+          return socket.emit("error", error);
+        }
+
+        // Find chat
+        const chat = await Chat.findOne({ listingId });
+
+        if (!chat) {
+          const error = { error: "Chat not found" };
+          if (callback) callback(error);
+          return socket.emit("error", error);
+        }
+
+        if (!chat.participants.includes(socket.user.id)) {
+          const error = { error: "Not authorized to send messages" };
+          if (callback) callback(error);
+          return socket.emit("error", error);
+        }
+
+        // Sanitize and trim message
+        const cleanText = text
+          .replace(/<[^>]*>?/gm, "") // Remove HTML tags
+          .trim()
+          .substring(0, 1000); // Limit length
+
+        // Create message object
+        const messageData = {
+          senderId: socket.user.id,
+          text: cleanText,
+          timestamp: new Date(),
+        };
+
+        // Save to database
+        chat.messages.push(messageData);
+        chat.lastActivity = new Date();
+        await chat.save();
+
+        // Get the saved message with _id
+        const savedMessage = chat.messages[chat.messages.length - 1];
+
+        // Prepare message for broadcast
+        const messageToSend = {
+          _id: savedMessage._id.toString(),
+          senderId: socket.user.id,
+          senderName: socket.user.name,
+          text: cleanText,
+          timestamp: savedMessage.timestamp,
+        };
+
+        // Broadcast to all users in the room (including sender)
+        io.to(listingId).emit("receiveMessage", messageToSend);
+
+        // Send success callback
+        if (callback) {
+          callback({
+            success: true,
+            message: messageToSend,
+          });
+        }
+      } catch (error) {
+        console.error("sendMessage error:", error);
+        const errorResponse = { error: "Failed to send message" };
+
+        if (callback) {
+          callback(errorResponse);
+        } else {
+          socket.emit("error", errorResponse);
+        }
       }
-
-      if (!listingId) {
-        const error = { error: "Listing ID required" };
-        if (callback) callback(error);
-        return socket.emit("error", error);
-      }
-
-      // Find chat
-      const chat = await Chat.findOne({ listingId });
-
-      if (!chat) {
-        const error = { error: "Chat not found" };
-        if (callback) callback(error);
-        return socket.emit("error", error);
-      }
-
-      if (!chat.participants.includes(socket.user.id)) {
-        const error = { error: "Not authorized to send messages" };
-        if (callback) callback(error);
-        return socket.emit("error", error);
-      }
-
-      // Sanitize and trim message
-      const cleanText = text
-        .replace(/<[^>]*>?/gm, "") // Remove HTML tags
-        .trim()
-        .substring(0, 1000); // Limit length
-
-      // Create message object
-      const messageData = {
-        senderId: socket.user.id,
-        text: cleanText,
-        timestamp: new Date(),
-      };
-
-      // Save to database
-      chat.messages.push(messageData);
-      chat.lastActivity = new Date();
-      await chat.save();
-
-      // Get the saved message with _id
-      const savedMessage = chat.messages[chat.messages.length - 1];
-
-      // Prepare message for broadcast
-      const messageToSend = {
-        _id: savedMessage._id.toString(),
-        senderId: socket.user.id,
-        senderName: socket.user.name,
-        text: cleanText,
-        timestamp: savedMessage.timestamp,
-      };
-
-
-      // Broadcast to all users in the room (including sender)
-      io.to(listingId).emit("receiveMessage", messageToSend);
-
-      // Send success callback
-      if (callback) {
-        callback({
-          success: true,
-          message: messageToSend
-        });
-      }
-    } catch (error) {
-      console.error("sendMessage error:", error);
-      const errorResponse = { error: "Failed to send message" };
-
-      if (callback) {
-        callback(errorResponse);
-      } else {
-        socket.emit("error", errorResponse);
-      }
-    }
-  });
+    },
+  );
 
   // Typing Indicator
   socket.on("typing", ({ listingId, userId, userName }) => {
@@ -346,7 +363,7 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({
     success: false,
     message: err.message || "Internal Server Error",
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 });
 
@@ -354,7 +371,7 @@ app.use((err, req, res, next) => {
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled Rejection:", err);
   // Log but don't exit in production
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     console.error(err.stack);
   }
 });
@@ -371,11 +388,10 @@ process.on("uncaughtException", (err) => {
   }
 });
 
-
 const PORT = process.env.PORT;
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server & Socket.IO running on port ${PORT}`);
 });
 
-export { io }; 
+export { io };
